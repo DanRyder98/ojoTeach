@@ -1,0 +1,50 @@
+{
+    "rules": {
+        "users": {
+            "$user_id": {
+                ".read": "auth.uid === $user_id",
+                ".write": "auth.uid === $user_id",
+                "profile": {
+                    "name": {
+                        ".validate": "newData.isString()"
+                    },
+                    "email": {
+                        ".validate": "newData.isString()"
+                    }
+                },
+                "dates": {
+                    "$date": {
+                        "activities": {
+                            "$activity_id": {
+                                "duration": {
+                                    ".validate": "newData.isNumber()"
+                                },
+                                "startHour": {
+                                    ".validate": "newData.isString()"
+                                },
+                                "subject": {
+                                    ".validate": "newData.isString()"
+                                },
+                                "yearGroup": {
+                                    ".validate": "newData.isString()"
+                                },
+                                "classCode": {
+                                    ".validate": "newData.isString()"
+                                },
+                                "location": {
+                                    ".validate": "newData.isString()"
+                                },
+                                "topic": {
+                                    ".validate": "newData.isString()"
+                                },
+                                "lessonObjectives": {
+                                    ".validate": "newData.isString()"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
