@@ -203,6 +203,7 @@ export default function EventForm({
                                                                                 color
                                                                             );
                                                                         }}
+                                                                        type="button"
                                                                     >
                                                                         <div
                                                                             className={`inline-block h-6 w-6 rounded-full ${
