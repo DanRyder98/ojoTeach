@@ -124,7 +124,7 @@ export function Pricing() {
                         name="Starter"
                         price="£X"
                         description="Good to try out for the price of a coffee, cancel anytime."
-                        href="/register"
+                        href="/scheduler"
                         features={["TBD", "TBD", "TBD"]}
                     />
                     <Plan
@@ -132,14 +132,14 @@ export function Pricing() {
                         name="Individual Pro"
                         price="£Y"
                         description="No restrictions on your teaching."
-                        href="/register"
+                        href="/scheduler"
                         features={["TBD", "TBD", "TBD", "TBD", "TBD", "TBD"]}
                     />
                     <Plan
                         name="Enterprise"
                         price="£Z"
                         description="Schools and organizations."
-                        href="/register"
+                        href="/scheduler"
                         features={["TBD", "TBD", "TBD", "TBD"]}
                     />
                 </div>

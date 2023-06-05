@@ -1,11 +1,21 @@
 import moment from "moment";
 import { eventColors, textColors, textColorsLight } from "@/styles/colors";
 
+const eventColumn = {
+    0: "col-start-0",
+    1: "col-start-1",
+    2: "col-start-2",
+    3: "col-start-3",
+    4: "col-start-4",
+    5: "col-start-5",
+    6: "col-start-6",
+}
+
 export default function Event({ event, setOpenEvent }) {
     return (
         <li
             key={event.dateTime + "event"}
-            className={`relative mt-px hidden col-start-${event.day} sm:flex`}
+            className={`relative mt-px hidden ${eventColumn[event.day]} sm:flex`}
             style={{
                 gridRow: `${
                     moment(event.dateTime).hours() * 12 +

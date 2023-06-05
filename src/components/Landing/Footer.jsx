@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/Landing/Container";
 import { NavLink } from "@/components/Landing/NavLink";
 import Image from "next/image";
+import ojoLogo from "@/images/logos/ojo_logo.svg"
 
 export function Footer() {
     return (
@@ -11,7 +12,7 @@ export function Footer() {
                 <div className="py-16">
                     <Image
                         className="mx-auto h-20 w-auto"
-                        src="/ojoteach_logo.jpg"
+                        src={ojoLogo}
                         alt="Ojo Teach Logo"
                         width={80}
                         height={10}

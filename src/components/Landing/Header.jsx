@@ -6,8 +6,9 @@ import clsx from "clsx";
 import { Button } from "@/components/Landing/Button";
 import { Container } from "@/components/Landing/Container";
 import { NavLink } from "@/components/Landing/NavLink";
-import { LoginComponent } from "@/components/Login/LoginComponent";
+// import { LoginComponent } from "@/components/Login/LoginComponent";
 import Image from "next/image";
+import ojoLogo from "@/images/logos/ojo_logo.svg";
 
 function MobileNavLink({ href, children }) {
     return (
@@ -101,10 +102,10 @@ export function Header() {
                         <Link href="#" aria-label="Home">
                             {/* <Logo className="h-10 w-auto" /> */}
                             <Image
-                                src="/ojoteach_logo.jpg"
+                                src={ojoLogo}
                                 alt="Ojo Teach Logo"
-                                width={80}
-                                height={10}
+                                width={200}
+                                height={105}
                             />
                         </Link>
                         <div className="hidden md:flex md:gap-x-6">
@@ -116,9 +117,9 @@ export function Header() {
                     <div className="flex items-center gap-x-5 md:gap-x-8">
                         <div className="hidden md:block">
                             {/* <NavLink href="/login">Sign in</NavLink> */}
-                            <LoginComponent />
+                            {/* <LoginComponent /> */}
                         </div>
-                        <Button href="/register" color="blue">
+                        <Button href="/scheduler" color="blue">
                             <span>
                                 Get started{" "}
                                 <span className="hidden lg:inline">today</span>
