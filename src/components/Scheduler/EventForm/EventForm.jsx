@@ -1,6 +1,10 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { LinkIcon, QuestionMarkCircleIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
+import {
+    LinkIcon,
+    QuestionMarkCircleIcon,
+    ChevronDownIcon,
+} from "@heroicons/react/20/solid";
 import CustomListInput from "@/components/common/CustomListInput";
 import { eventColors, eventBorderColors } from "@/styles/colors";
 import { Menu, Transition, Dialog } from "@headlessui/react";
@@ -9,36 +13,98 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-export default function EventForm({ open, setOpen }) {
-    const [items, setItems] = useState([]);
-    const [event, setEvent] = useState({
-        color: "blue",
-        subject: "",
-        topic: "",
-        lessonObjectives: [],
-        yearGroup: null,
-        duration: 1
-    })
+export default function EventForm({
+    open,
+    setOpen,
+    selectedEvent,
+    setSelectedEvent,
+    events,
+    setEvents,
+}) {
+    const [formEvent, setFormEvent] = useState(
+        selectedEvent || {
+            id: Math.random(),
+            color: "blue",
+            subject: "",
+            topic: "",
+            lessonObjectives: [],
+            yearGroup: null,
+            duration: 1,
+        }
+    );
+    const [items, setItems] = useState(formEvent.lessonObjectives);
+
+    useEffect(() => {
+        setSelectedEvent(formEvent);
+    }, [formEvent, setSelectedEvent]);
+
+    useEffect(() => {
+        if (selectedEvent) {
+            setFormEvent(selectedEvent);
+            setItems(selectedEvent.lessonObjectives);
+        }
+    }, [selectedEvent]);
 
     const handleSubmit = (e) => {
+        console.log("submit called");
         e.preventDefault();
-        console.log("submit");
+        setEvents((events) => {
+            if (
+                events.some(
+                    (event) => event.dateTime === selectedEvent.dateTime
+                )
+            ) {
+                return events.map((event) =>
+                    event.dateTime === selectedEvent.dateTime
+                        ? selectedEvent
+                        : event
+                );
+            } else {
+                return [...events, selectedEvent];
+            }
+        });
+        setOpen(false);
+    };
+
+    const handleDelete = () => {
+        const newEvents = events.filter((event) => event.id !== formEvent.id);
+        setEvents(newEvents);
+
+        setOpen(false);
+    };
+
+    const handleClose = () => {
+        if (formEvent.subject === "" && formEvent.topic === "") {
+            handleDelete();
+        }
+        setOpen(false);
+    };
+
+    const handleColorChange = (color) => {
+        setFormEvent((event) => ({
+            ...event,
+            color: color,
+        }));
     };
 
     const handleChangeYearGroup = (index) => {
-        setEvent(event => ({
+        setFormEvent((event) => ({
             ...event,
-            yearGroup: index
+            yearGroup: index,
         }));
-    }
+    };
 
     const handleChangeDuration = () => {
-        console.log("change duration called")
-    }
+        console.log("change duration called");
+    };
+
+    const handleGoToLessonPlan = () => {
+        console.log("go to lesson plan called");
+    };
 
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-10" onClose={setOpen}>
+            <Dialog as="div" className="relative z-10" onClose={handleClose}>
                 <div className="fixed inset-0" />
 
                 <div className="fixed inset-0 overflow-hidden">
@@ -64,22 +130,37 @@ export default function EventForm({ open, setOpen }) {
                                                 <div className="flex items-start justify-between space-x-3">
                                                     <div className="space-y-1">
                                                         <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
-                                                            New lesson
+                                                            {formEvent.subject ===
+                                                            ""
+                                                                ? "New Lesson"
+                                                                : formEvent.subject +
+                                                                  " - Year " +
+                                                                  formEvent.yearGroup}
                                                         </Dialog.Title>
                                                         <p className="text-sm text-gray-500">
-                                                            Get started by
-                                                            filling in the
-                                                            information below to
-                                                            create your new
-                                                            lesson.
+                                                            {formEvent.subject ===
+                                                            ""
+                                                                ? "Get started by filling in the information below to create your new lesson."
+                                                                : formEvent.topic}
                                                         </p>
                                                     </div>
                                                     <div className="flex h-7 items-center">
                                                         <button
                                                             type="button"
+                                                            className="inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                            onClick={
+                                                                handleGoToLessonPlan
+                                                            }
+                                                        >
+                                                            Lesson Plan
+                                                        </button>
+                                                    </div>
+                                                    <div className="flex h-7 items-center">
+                                                        <button
+                                                            type="button"
                                                             className="text-gray-400 hover:text-gray-500"
-                                                            onClick={() =>
-                                                                setOpen(false)
+                                                            onClick={
+                                                                handleClose
                                                             }
                                                         >
                                                             <span className="sr-only">
@@ -112,21 +193,30 @@ export default function EventForm({ open, setOpen }) {
                                                                     color,
                                                                     index
                                                                 ) => (
-                                                                    <div
+                                                                    <button
                                                                         key={
+                                                                            color +
                                                                             index
                                                                         }
-                                                                        className={`inline-block h-6 w-6 rounded-full ${
-                                                                            eventColors[
+                                                                        onClick={() => {
+                                                                            handleColorChange(
                                                                                 color
-                                                                            ]
-                                                                        } ${
-                                                                            event.color ===
-                                                                            color
-                                                                                ? `border-2 ${eventBorderColors[color]}`
-                                                                                : ""
-                                                                        }`}
-                                                                    ></div>
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        <div
+                                                                            className={`inline-block h-6 w-6 rounded-full ${
+                                                                                eventColors[
+                                                                                    color
+                                                                                ]
+                                                                            } ${
+                                                                                formEvent.color ===
+                                                                                color
+                                                                                    ? `border-2 ${eventBorderColors[color]}`
+                                                                                    : ""
+                                                                            }`}
+                                                                        ></div>
+                                                                    </button>
                                                                 )
                                                             )}
                                                         </div>
@@ -149,6 +239,22 @@ export default function EventForm({ open, setOpen }) {
                                                             name="project-name"
                                                             id="project-name"
                                                             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                                            value={
+                                                                formEvent.subject
+                                                            }
+                                                            onChange={(e) =>
+                                                                setFormEvent(
+                                                                    (
+                                                                        event
+                                                                    ) => ({
+                                                                        ...event,
+                                                                        subject:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    })
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -169,6 +275,21 @@ export default function EventForm({ open, setOpen }) {
                                                             name="project-name"
                                                             id="project-name"
                                                             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                                            value={
+                                                                formEvent.topic
+                                                            }
+                                                            onChange={(e) =>
+                                                                setFormEvent(
+                                                                    (
+                                                                        event
+                                                                    ) => ({
+                                                                        ...event,
+                                                                        topic: e
+                                                                            .target
+                                                                            .value,
+                                                                    })
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -195,33 +316,40 @@ export default function EventForm({ open, setOpen }) {
                                                             className="relative inline-block text-left"
                                                         >
                                                             <div>
-                                                            {event.yearGroup === null && (
-                                                                <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-400 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                                                                    Year Group
-                                                                    <ChevronDownIcon
-                                                                        className="-mr-1 h-5 w-5 text-gray-400"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                </Menu.Button>
-                                                            )}
-                                                            {event.yearGroup === 0 && (
-                                                                <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                                                                    Reception
-                                                                    <ChevronDownIcon
-                                                                        className="-mr-1 h-5 w-5 text-gray-400"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                </Menu.Button>
-                                                            )}
-                                                            {event.yearGroup !== null && event.yearGroup !== 0 && (
-                                                                <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                                                                    {"Year " + event.yearGroup}
-                                                                    <ChevronDownIcon
-                                                                        className="-mr-1 h-5 w-5 text-gray-400"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                </Menu.Button>
-                                                            )}
+                                                                {formEvent.yearGroup ===
+                                                                    null && (
+                                                                    <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm text-gray-400 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                                                        Year
+                                                                        Group
+                                                                        <ChevronDownIcon
+                                                                            className="-mr-1 h-5 w-5 text-gray-400"
+                                                                            aria-hidden="true"
+                                                                        />
+                                                                    </Menu.Button>
+                                                                )}
+                                                                {formEvent.yearGroup ===
+                                                                    0 && (
+                                                                    <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                                                        Reception
+                                                                        <ChevronDownIcon
+                                                                            className="-mr-1 h-5 w-5 text-gray-400"
+                                                                            aria-hidden="true"
+                                                                        />
+                                                                    </Menu.Button>
+                                                                )}
+                                                                {formEvent.yearGroup !==
+                                                                    null &&
+                                                                    formEvent.yearGroup !==
+                                                                        0 && (
+                                                                        <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                                                            {"Year " +
+                                                                                formEvent.yearGroup}
+                                                                            <ChevronDownIcon
+                                                                                className="-mr-1 h-5 w-5 text-gray-400"
+                                                                                aria-hidden="true"
+                                                                            />
+                                                                        </Menu.Button>
+                                                                    )}
                                                             </div>
 
                                                             <Transition
@@ -233,9 +361,9 @@ export default function EventForm({ open, setOpen }) {
                                                                 leaveFrom="transform opacity-100 scale-100"
                                                                 leaveTo="transform opacity-0 scale-95"
                                                             >
-                                                                <Menu.Items className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-y-auto max-h-60">
-    <div className="py-1">
-        <Menu.Item>
+                                                                <Menu.Items className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-y-auto max-h-36">
+                                                                    <div className="py-1">
+                                                                        <Menu.Item>
                                                                             {({
                                                                                 active,
                                                                             }) => (
@@ -320,10 +448,10 @@ export default function EventForm({ open, setOpen }) {
                                                                     name="duration"
                                                                     type="number"
                                                                     min="0.5"
-                                                                    max="12"
+                                                                    max="120"
                                                                     step="0.5"
                                                                     value={
-                                                                        event.duration
+                                                                        formEvent.duration
                                                                     }
                                                                     onChange={
                                                                         handleChangeDuration
@@ -333,163 +461,12 @@ export default function EventForm({ open, setOpen }) {
                                                             </div>
                                                             <div className="flex items-center">
                                                                 <span className="text-gray-500 text-sm">
-                                                                    hour(s)
+                                                                    minutes
                                                                 </span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-
-
-                                                {/* Privacy */}
-                                                <fieldset className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
-                                                    <legend className="sr-only">
-                                                        Privacy
-                                                    </legend>
-                                                    <div
-                                                        className="text-sm font-medium leading-6 text-gray-900"
-                                                        aria-hidden="true"
-                                                    >
-                                                        Privacy
-                                                    </div>
-                                                    <div className="space-y-5 sm:col-span-2">
-                                                        <div className="space-y-5 sm:mt-0">
-                                                            <div className="relative flex items-start">
-                                                                <div className="absolute flex h-6 items-center">
-                                                                    <input
-                                                                        id="public-access"
-                                                                        name="privacy"
-                                                                        aria-describedby="public-access-description"
-                                                                        type="radio"
-                                                                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                                                                        defaultChecked
-                                                                    />
-                                                                </div>
-                                                                <div className="pl-7 text-sm leading-6">
-                                                                    <label
-                                                                        htmlFor="public-access"
-                                                                        className="font-medium text-gray-900"
-                                                                    >
-                                                                        Public
-                                                                        access
-                                                                    </label>
-                                                                    <p
-                                                                        id="public-access-description"
-                                                                        className="text-gray-500"
-                                                                    >
-                                                                        Everyone
-                                                                        with the
-                                                                        link
-                                                                        will see
-                                                                        this
-                                                                        project
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="relative flex items-start">
-                                                                <div className="absolute flex h-6 items-center">
-                                                                    <input
-                                                                        id="restricted-access"
-                                                                        name="privacy"
-                                                                        aria-describedby="restricted-access-description"
-                                                                        type="radio"
-                                                                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                                                                    />
-                                                                </div>
-                                                                <div className="pl-7 text-sm leading-6">
-                                                                    <label
-                                                                        htmlFor="restricted-access"
-                                                                        className="font-medium text-gray-900"
-                                                                    >
-                                                                        Private
-                                                                        to
-                                                                        Project
-                                                                        Members
-                                                                    </label>
-                                                                    <p
-                                                                        id="restricted-access-description"
-                                                                        className="text-gray-500"
-                                                                    >
-                                                                        Only
-                                                                        members
-                                                                        of this
-                                                                        project
-                                                                        would be
-                                                                        able to
-                                                                        access
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="relative flex items-start">
-                                                                <div className="absolute flex h-6 items-center">
-                                                                    <input
-                                                                        id="private-access"
-                                                                        name="privacy"
-                                                                        aria-describedby="private-access-description"
-                                                                        type="radio"
-                                                                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                                                                    />
-                                                                </div>
-                                                                <div className="pl-7 text-sm leading-6">
-                                                                    <label
-                                                                        htmlFor="private-access"
-                                                                        className="font-medium text-gray-900"
-                                                                    >
-                                                                        Private
-                                                                        to you
-                                                                    </label>
-                                                                    <p
-                                                                        id="private-access-description"
-                                                                        className="text-gray-500"
-                                                                    >
-                                                                        You are
-                                                                        the only
-                                                                        one able
-                                                                        to
-                                                                        access
-                                                                        this
-                                                                        project
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <hr className="border-gray-200" />
-                                                        <div className="flex flex-col items-start space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                                                            <div>
-                                                                <a
-                                                                    href="#"
-                                                                    className="group flex items-center space-x-2.5 text-sm font-medium text-indigo-600 hover:text-indigo-900"
-                                                                >
-                                                                    <LinkIcon
-                                                                        className="h-5 w-5 text-indigo-500 group-hover:text-indigo-900"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                    <span>
-                                                                        Copy
-                                                                        link
-                                                                    </span>
-                                                                </a>
-                                                            </div>
-                                                            <div>
-                                                                <a
-                                                                    href="#"
-                                                                    className="group flex items-center space-x-2.5 text-sm text-gray-500 hover:text-gray-900"
-                                                                >
-                                                                    <QuestionMarkCircleIcon
-                                                                        className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                    <span>
-                                                                        Learn
-                                                                        more
-                                                                        about
-                                                                        sharing
-                                                                    </span>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </fieldset>
                                             </div>
                                         </div>
 
@@ -498,18 +475,28 @@ export default function EventForm({ open, setOpen }) {
                                             <div className="flex justify-end space-x-3">
                                                 <button
                                                     type="button"
+                                                    className="inline-flex justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                                                    onClick={handleDelete}
+                                                >
+                                                    Delete
+                                                </button>
+                                                {/* <button
+                                                    type="button"
                                                     className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                                                    onClick={() =>
-                                                        setOpen(false)
-                                                    }
+                                                    onClick={handleClose}
                                                 >
                                                     Cancel
-                                                </button>
+                                                </button> */}
                                                 <button
                                                     type="submit"
                                                     className="inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                    onClick={(e) => {
+                                                        handleSubmit(e);
+                                                    }}
                                                 >
-                                                    Create
+                                                    {formEvent.subject === ""
+                                                        ? "Create"
+                                                        : "Save"}
                                                 </button>
                                             </div>
                                         </div>

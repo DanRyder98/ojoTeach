@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import {
     ChevronDownIcon,
     ChevronLeftIcon,
@@ -14,38 +14,13 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
-const events = [
-    {
-        title: "Breakfast",
-        dateTime: "2023-06-06T06:00",
-        duration: 12,
-        color: "blue",
-        day: 3, // Day of the week in numbers, where 0 = Sunday, 1 = Monday, etc.
-    },
-    {
-        title: "Flight to Paris",
-        dateTime: "2023-06-06T07:30",
-        duration: 30,
-        color: "red",
-        day: 3,
-    },
-    {
-        title: "Testing",
-        dateTime: "2023-06-08T10:00",
-        duration: 24,
-        color: "yellow",
-        day: 6,
-    },
-    {
-        title: "Team sync",
-        dateTime: "2023-06-08T17:00",
-        duration: 60,
-        color: "blue",
-        day: 0,
-    },
-];
-
-export default function WeekCalendar({ setOpenEvent }) {
+export default function WeekCalendar({
+    setOpenEvent,
+    selectedEvent,
+    setSelectedEvent,
+    events,
+    setEvents,
+}) {
     const container = useRef(null);
     const containerNav = useRef(null);
     const containerOffset = useRef(null);
@@ -95,6 +70,66 @@ export default function WeekCalendar({ setOpenEvent }) {
     const totalMinutesInDay = 24 * 60;
     const topPosition = (minutesIntoDay / totalMinutesInDay) * 100;
     const currentDay = now.getDay();
+
+    // Array of hours
+    const hours = Array.from({ length: 24 }, (_, i) => (i === 0 ? 12 : i % 12));
+
+    // Function to generate AM or PM based on the hour
+    const getMeridiem = (hour) => (hour < 12 || hour === 24 ? "AM" : "PM");
+
+    const calendarGridRef = useRef(); // Ref to the calendar grid container
+
+    const checkIfEventExists = (dateTime) => {
+        for (let event of events) {
+            const eventStartTime = moment(event.dateTime);
+            const eventEndTime = moment(event.dateTime).add(
+                event.duration,
+                "minutes"
+            );
+
+            const clickedTime = moment(dateTime);
+
+            if (
+                clickedTime.isSameOrAfter(eventStartTime) &&
+                clickedTime.isSameOrBefore(eventEndTime)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const handleGridClick = (e) => {
+        const { top, left, height, width } =
+            calendarGridRef.current.getBoundingClientRect();
+        const clickedHour = Math.floor(((e.clientY - top) / height) * 24); // Assuming 24 hours
+        const clickedDay = Math.floor(((e.clientX - left) / width) * 7); // Assuming 7 days
+        const clickedDateTime = moment()
+            .hour(clickedHour)
+            .day(clickedDay)
+            .minute(0)
+            .second(0)
+            .format();
+
+        if (checkIfEventExists(clickedDateTime)) {
+            return;
+        }
+
+        const newEvent = {
+            title: "",
+            dateTime: clickedDateTime,
+            duration: 60,
+            color: "blue",
+            day: clickedDay + 1,
+            subject: "",
+            topic: "",
+            lessonObjectives: [],
+            yearGroup: null,
+        };
+        setSelectedEvent(newEvent);
+        setEvents([...events, newEvent]);
+        setOpenEvent(true);
+    };
 
     return (
         <div className="flex h-full flex-col">
@@ -437,7 +472,11 @@ export default function WeekCalendar({ setOpenEvent }) {
                             {days}
                         </div>
                     </div>
-                    <div className="flex flex-auto">
+                    <div
+                        className="flex flex-auto"
+                        ref={calendarGridRef}
+                        onClick={handleGridClick}
+                    >
                         <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100" />
                         <div className="grid flex-auto grid-cols-1 grid-rows-1">
                             {/* Horizontal lines */}
@@ -452,150 +491,18 @@ export default function WeekCalendar({ setOpenEvent }) {
                                     ref={containerOffset}
                                     className="row-end-1 h-7"
                                 ></div>
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        12AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        1AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        2AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        3AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        4AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        5AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        6AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        7AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        8AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        9AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        10AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        11AM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        12PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        1PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        2PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        3PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        4PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        5PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        6PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        7PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        8PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        9PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        10PM
-                                    </div>
-                                </div>
-                                <div />
-                                <div>
-                                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                                        11PM
-                                    </div>
-                                </div>
-                                <div />
+
+                                {hours.map((hour, i) => (
+                                    <Fragment key={i}>
+                                        <div>
+                                            <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                                                {hour === 12 ? 12 : hour % 12}
+                                                {getMeridiem(i)}
+                                            </div>
+                                        </div>
+                                        <div />
+                                    </Fragment>
+                                ))}
                             </div>
 
                             {/* Vertical lines */}
@@ -639,6 +546,7 @@ export default function WeekCalendar({ setOpenEvent }) {
                                         key={event.dateTime + "event"}
                                         event={event}
                                         setOpenEvent={setOpenEvent}
+                                        setSelectedEvent={setSelectedEvent}
                                     />
                                 ))}
                             </ol>

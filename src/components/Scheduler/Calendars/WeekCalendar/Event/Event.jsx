@@ -11,19 +11,26 @@ const eventColumn = {
     6: "col-start-6",
 }
 
-export default function Event({ event, setOpenEvent }) {
+export default function Event({ event, setOpenEvent, setSelectedEvent }) {
+    const handleSelectEvent = () => {
+        setSelectedEvent(event);
+        setOpenEvent(true);
+    };
+
     return (
         <li
             key={event.dateTime + "event"}
-            className={`relative mt-px hidden ${eventColumn[event.day]} sm:flex`}
+            className={`relative mt-px hidden ${
+                eventColumn[event.day]
+            } sm:flex`}
             style={{
                 gridRow: `${
                     moment(event.dateTime).hours() * 12 +
                     Math.floor(moment(event.dateTime).minutes() / 5) +
                     2
-                } / span ${event.duration}`,
+                } / span ${event.duration / 5}`,
             }}
-            onClick={() => setOpenEvent(true)}
+            onClick={handleSelectEvent}
         >
             <a
                 href="#"
@@ -36,7 +43,14 @@ export default function Event({ event, setOpenEvent }) {
                         textColors[event.color]
                     }`}
                 >
-                    {event.title}
+                    {event.subject}
+                </p>
+                <p
+                    className={`order-1 font-semibold ${
+                        textColors[event.color]
+                    }`}
+                >
+                    {event.yearGroup && `Year ${event.yearGroup}`}
                 </p>
                 <p
                     className={`${textColorsLight[event.color]} group-hover:${

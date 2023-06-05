@@ -74,7 +74,7 @@ export default function CustomListInput({ items, setItems }) {
                             >
                                 <div>
                                     <p className="pl-3 text-sm leading-6 text-gray-900">
-                                        <div className="">• {item}</div>
+                                        <a className="">• {item}</a>
                                     </p>
                                 </div>
                                 <button
