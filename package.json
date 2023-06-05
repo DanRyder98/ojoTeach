@@ -22,14 +22,17 @@
     "focus-visible": "^5.2.0",
     "moment": "^2.29.4",
     "next": "13.4.2",
+    "openai-streams": "^5.7.0",
     "postcss-focus-visible": "^6.0.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^4.9.0",
+    "react-markdown": "^8.0.7",
     "tailwindcss": "^3.3.0"
   },
   "devDependencies": {
+    "@types/react": "18.2.8",
     "eslint": "8.26.0",
     "eslint-config-next": "13.0.2",
     "prettier": "^2.8.7",
