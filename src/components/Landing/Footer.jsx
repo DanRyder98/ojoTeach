@@ -28,9 +28,16 @@ export function Footer() {
                 <div className="flex flex-col items-center border-t border-slate-400/10 py-10 sm:flex-row-reverse sm:justify-between">
                     <div className="flex gap-x-6">
                         <Link
+                            href="mailto:danielryder98@gmail.com"
+                            className="group"
+                            aria-label="Support Email"
+                        >
+                            danielryder98@gmail.com
+                        </Link>
+                        <Link
                             href="https://twitter.com/ojoteach"
                             className="group"
-                            aria-label="TaxPal on Twitter"
+                            aria-label="Ojo Teach on Twitter"
                         >
                             <svg
                                 aria-hidden="true"

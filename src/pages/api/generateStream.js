@@ -28,7 +28,7 @@ export default async function test(req, res) {
                         JSON.stringify(lessonData),
                 },
             ],
-            max_tokens: 300,
+            max_tokens: 20,
         });
 
         stream.pipe(res);

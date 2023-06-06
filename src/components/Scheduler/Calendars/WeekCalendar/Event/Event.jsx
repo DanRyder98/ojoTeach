@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { eventColors, textColors, textColorsLight } from "@/styles/colors";
 
@@ -9,9 +10,24 @@ const eventColumn = {
     4: "col-start-4",
     5: "col-start-5",
     6: "col-start-6",
-}
+};
 
 export default function Event({ event, setOpenEvent, setSelectedEvent }) {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 640);
+        };
+
+        // Check mobile on mount and resize
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+
+        // Cleanup event listener
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
     const handleSelectEvent = () => {
         setSelectedEvent(event);
         setOpenEvent(true);
@@ -21,7 +37,9 @@ export default function Event({ event, setOpenEvent, setSelectedEvent }) {
         <>
             <li
                 key={event.dateTime + "event"}
-                className={`relative mt-px sm:${eventColumn[event.day]} flex`}
+                className={`relative mt-px ${
+                    isMobile ? "" : eventColumn[event.day]
+                } ${isMobile ? "sm:" + eventColumn[event.day] : ""} flex`}
                 style={{
                     gridRow: `${
                         moment(event.dateTime).hours() * 12 +
@@ -62,22 +80,6 @@ export default function Event({ event, setOpenEvent, setSelectedEvent }) {
                     </p>
                 </a>
             </li>
-            {/* <li
-                className="relative mt-px flex sm:col-start-3"
-                style={{ gridRow: "74 / span 12" }}
-            >
-                <a
-                    href="#"
-                    className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
-                >
-                    <p className="order-1 font-semibold text-blue-700">
-                        Breakfast
-                    </p>
-                    <p className="text-blue-500 group-hover:text-blue-700">
-                        <time dateTime="2022-01-12T06:00">6:00 AM</time>
-                    </p>
-                </a>
-            </li> */}
         </>
     );
 }

@@ -48,7 +48,7 @@ const SchedulerComponent = () => {
     const [events, setEvents] = useState(initialEvents);
 
     return (
-        <div>
+        <>
             <WeekCalendar
                 setOpenEvent={setOpenEvent}
                 selectedEvent={selectedEvent}
@@ -64,7 +64,7 @@ const SchedulerComponent = () => {
                 events={events}
                 setEvents={setEvents}
             />
-        </div>
+        </>
     );
 };
 
