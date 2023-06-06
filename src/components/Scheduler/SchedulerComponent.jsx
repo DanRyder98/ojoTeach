@@ -63,6 +63,7 @@ const SchedulerComponent = () => {
                 setSelectedEvent={setSelectedEvent}
                 events={events}
                 setEvents={setEvents}
+                showViewLessonButton={true}
             />
         </>
     );
