@@ -7,6 +7,9 @@ import { Menu, Transition, Dialog } from "@headlessui/react";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
 import { duration } from "moment";
+import { getDatabase, ref, set, push } from "firebase/database";
+import moment from "moment";
+import { useUser } from "@/components/common/UserContext";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -36,6 +39,7 @@ export default function EventForm({
     const [loading, setLoading] = useState(true);
     const [buttonActive, setButtonActive] = useState(true);
 
+    const user = useUser();
     const router = useRouter();
 
     const generated = false;
@@ -70,23 +74,41 @@ export default function EventForm({
     }, [selectedEvent]);
 
     const handleSubmit = (e) => {
-        console.log("submit called");
+        if (!user) return;
+
         e.preventDefault();
-        setEvents((events) => {
-            if (
-                events.some(
-                    (event) => event.dateTime === selectedEvent.dateTime
-                )
-            ) {
-                return events.map((event) =>
+
+        const db = getDatabase();
+        const date = moment(selectedEvent.dateTime).format("YYYY-MM-DD");
+        const time = moment(selectedEvent.dateTime).format("HH:mm");
+
+        // The path to the event in the database.
+        // Replace `auth.currentUser.uid` with the actual user's ID.
+        const eventRef = ref(db, `/users/${user.uid}/dates/${date}/event`);
+
+        let eventToSave = { ...selectedEvent, dateTime: time }; // Remove the date part from dateTime
+
+        if (selectedEvent.id) {
+            // If the event already exists
+            set(ref(db, `${eventRef}/${selectedEvent.id}`), eventToSave);
+            setEvents((events) =>
+                events.map((event) =>
                     event.dateTime === selectedEvent.dateTime
                         ? selectedEvent
                         : event
-                );
-            } else {
-                return [...events, selectedEvent];
-            }
-        });
+                )
+            );
+        } else {
+            // If the event is new
+            const newEventRef = push(eventRef);
+            set(newEventRef, eventToSave).then(() => {
+                setEvents((events) => [
+                    ...events,
+                    { ...eventToSave, id: newEventRef.key },
+                ]);
+            });
+        }
+
         setOpen(false);
     };
 

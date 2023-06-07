@@ -14,31 +14,33 @@
                 },
                 "dates": {
                     "$date": {
-                        "activities": {
-                            "$activity_id": {
-                                "duration": {
-                                    ".validate": "newData.isNumber()"
+                        ".validate": "newData.hasChildren()",
+                        "events": {
+                            "$event_id": {
+                                ".validate": "newData.hasChildren(['dateTime', 'duration', 'color', 'subject', 'topic', 'lessonObjectives', 'yearGroup'])",
+                                "dateTime": {
+                                    ".validate": "newData.isString() && newData.val().length > 0"
                                 },
-                                "startHour": {
-                                    ".validate": "newData.isString()"
+                                "duration": {
+                                    ".validate": "newData.isNumber() && newData.val() > 0"
+                                },
+                                "color": {
+                                    ".validate": "newData.isString() && newData.val().length > 0"
                                 },
                                 "subject": {
-                                    ".validate": "newData.isString()"
-                                },
-                                "yearGroup": {
-                                    ".validate": "newData.isString()"
-                                },
-                                "classCode": {
-                                    ".validate": "newData.isString()"
-                                },
-                                "location": {
-                                    ".validate": "newData.isString()"
+                                    ".validate": "newData.isString() && newData.val().length > 0"
                                 },
                                 "topic": {
-                                    ".validate": "newData.isString()"
+                                    ".validate": "newData.isString() && newData.val().length > 0"
                                 },
                                 "lessonObjectives": {
-                                    ".validate": "newData.isString()"
+                                    ".validate": "newData.hasChildren()",
+                                    "$objective": {
+                                        ".validate": "newData.isString()"
+                                    }
+                                },
+                                "yearGroup": {
+                                    ".validate": "newData.isNumber() && newData.val() >= 0"
                                 }
                             }
                         }

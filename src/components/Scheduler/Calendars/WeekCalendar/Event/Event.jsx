@@ -15,6 +15,9 @@ const eventColumn = {
 export default function Event({ event, setOpenEvent, setSelectedEvent }) {
     const [isMobile, setIsMobile] = useState(false);
 
+    const date = new Date(event.dateTime);
+    event.day = date.getDay() + 1;
+
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth <= 640);

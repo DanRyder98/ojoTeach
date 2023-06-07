@@ -2,14 +2,17 @@ import 'focus-visible'
 import '@/styles/tailwind.css'
 
 import { Toaster } from "react-hot-toast";
+import { UserProvider } from "@/components/common/UserContext";
 // import CookieConsent from "react-cookie-consent";
 // import Link from "next/link";
 
 export default function App({ Component, pageProps }) {
     return (
         <>
-            <Toaster position="bottom-center" />
-            <Component {...pageProps} />
+            <UserProvider>
+                <Toaster position="bottom-center" />
+                <Component {...pageProps} />
+            </UserProvider>
             {/* <CookieConsent
                 location="bottom"
                 buttonText="Yeah I want the website to work properly so accept cookies"

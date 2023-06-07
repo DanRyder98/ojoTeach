@@ -1,14 +1,10 @@
 import { Disclosure } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import ojoLogo from "@/images/logos/ojo_logo.svg";
 import ojoIcon from "@/images/logos/ojo_icon.svg";
 import Link from "next/link";
 import ProfileDropdown from "./ProfileDropdown/ProfileDropdown";
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(" ");
-}
 
 export default function NavBar({ children, selectedPage }) {
     if (!selectedPage) selectedPage = "scheduler";
@@ -112,19 +108,6 @@ export default function NavBar({ children, selectedPage }) {
 
                             <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                                 {children}
-                                <button
-                                    type="button"
-                                    className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                >
-                                    <span className="sr-only">
-                                        View notifications
-                                    </span>
-                                    <BellIcon
-                                        className="h-6 w-6"
-                                        aria-hidden="true"
-                                    />
-                                </button>
-
                                 <ProfileDropdown />
                             </div>
                         </div>
