@@ -28,16 +28,16 @@ export default function WeekCalendar({
     const containerNav = useRef(null);
     const containerOffset = useRef(null);
 
-    useEffect(() => {
-        // Set the container scroll position based on the current time.
-        const currentMinute = new Date().getHours() * 60;
-        container.current.scrollTop =
-            ((container.current.scrollHeight -
-                containerNav.current.offsetHeight -
-                containerOffset.current.offsetHeight) *
-                currentMinute) /
-            1440;
-    }, []);
+    // useEffect(() => {
+    //     // Set the container scroll position based on the current time.
+    //     const currentMinute = new Date().getHours() * 60;
+    //     container.current.scrollTop =
+    //         ((container.current.scrollHeight -
+    //             containerNav.current.offsetHeight -
+    //             containerOffset.current.offsetHeight) *
+    //             currentMinute) /
+    //         1440;
+    // }, []);
 
     // const date = moment().format("YYYY-MM-DD");
 
@@ -73,6 +73,7 @@ export default function WeekCalendar({
     const totalMinutesInDay = 24 * 60;
     const topPosition = (minutesIntoDay / totalMinutesInDay) * 100;
     const currentDay = now.getDay();
+    const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
 
     // Array of hours
     const hours = Array.from({ length: 24 }, (_, i) => (i === 0 ? 12 : i % 12));
@@ -419,69 +420,27 @@ export default function WeekCalendar({
                         className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8"
                     >
                         <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
-                            <button
-                                type="button"
-                                className="flex flex-col items-center pb-3 pt-2"
-                            >
-                                M{" "}
-                                <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">
-                                    10
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                className="flex flex-col items-center pb-3 pt-2"
-                            >
-                                T{" "}
-                                <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">
-                                    11
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                className="flex flex-col items-center pb-3 pt-2"
-                            >
-                                W{" "}
-                                <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
-                                    12
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                className="flex flex-col items-center pb-3 pt-2"
-                            >
-                                T{" "}
-                                <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">
-                                    13
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                className="flex flex-col items-center pb-3 pt-2"
-                            >
-                                F{" "}
-                                <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">
-                                    14
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                className="flex flex-col items-center pb-3 pt-2"
-                            >
-                                S{" "}
-                                <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">
-                                    15
-                                </span>
-                            </button>
-                            <button
-                                type="button"
-                                className="flex flex-col items-center pb-3 pt-2"
-                            >
-                                S{" "}
-                                <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">
-                                    16
-                                </span>
-                            </button>
+                            {daysOfWeek.map((day, index) => {
+                                const isSelected = index === currentDay;
+                                return (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        className="flex flex-col items-center pb-3 pt-2"
+                                    >
+                                        {day}{" "}
+                                        <span
+                                            className={`mt-1 flex h-8 w-8 items-center justify-center ${
+                                                isSelected
+                                                    ? "rounded-full bg-indigo-600 font-semibold text-white"
+                                                    : "font-semibold text-gray-900"
+                                            }`}
+                                        >
+                                            {currentDay + index}
+                                        </span>
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">

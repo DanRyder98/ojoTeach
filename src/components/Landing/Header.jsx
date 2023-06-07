@@ -7,6 +7,7 @@ import { Button } from "@/components/Landing/Button";
 import { Container } from "@/components/Landing/Container";
 import { NavLink } from "@/components/Landing/NavLink";
 // import { LoginComponent } from "@/components/Login/LoginComponent";
+import ProfileDropdown from "../common/ProfileDropdown/ProfileDropdown";
 import Image from "next/image";
 import ojoLogo from "@/images/logos/ojo_logo.svg";
 
@@ -115,16 +116,17 @@ export function Header() {
                         </div>
                     </div>
                     <div className="flex items-center gap-x-5 md:gap-x-8">
-                        <div className="hidden md:block">
-                            {/* <NavLink href="/login">Sign in</NavLink> */}
-                            {/* <LoginComponent /> */}
-                        </div>
                         <Button href="/scheduler" color="blue">
                             <span>
                                 Get started{" "}
                                 <span className="hidden lg:inline">today</span>
                             </span>
                         </Button>
+                        <div className="hidden md:block">
+                            {/* <NavLink href="/login">Sign in</NavLink> */}
+                            {/* <LoginComponent /> */}
+                            <ProfileDropdown />
+                        </div>
                         <div className="-mr-1 md:hidden">
                             <MobileNavigation />
                         </div>
