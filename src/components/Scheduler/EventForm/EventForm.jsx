@@ -2,7 +2,11 @@ import { Fragment, useEffect, useState } from "react";
 import { XMarkIcon, BookOpenIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import CustomListInput from "@/components/common/CustomListInput";
-import { eventColors, eventBorderColors } from "@/styles/colors";
+import {
+    eventColors,
+    eventBorderColors,
+    getRandomColor,
+} from "@/styles/colors";
 import { Menu, Transition, Dialog } from "@headlessui/react";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
@@ -23,11 +27,12 @@ export default function EventForm({
     events,
     setEvents,
     showViewLessonButton = true,
+    isNewEvent = false,
 }) {
     const [formEvent, setFormEvent] = useState(
         selectedEvent || {
             id: Math.random(),
-            color: "blue",
+            color: getRandomColor(),
             subject: "",
             topic: "",
             lessonObjectives: [],
@@ -35,32 +40,31 @@ export default function EventForm({
             duration: 1,
         }
     );
-    const [items, setItems] = useState(formEvent.lessonObjectives);
+    const [items, setItems] = useState(formEvent.lessonObjectives || {});
     const [loading, setLoading] = useState(true);
     const [buttonActive, setButtonActive] = useState(true);
+    const [lessonPlanGenerated, setLessonPlanGenerated] = useState(false);
 
     const user = useUser();
     const router = useRouter();
 
-    const generated = false;
     useEffect(() => {
-        if (!generated && open && showViewLessonButton) {
+        if (!lessonPlanGenerated && open && showViewLessonButton) {
             setLoading(true);
             setButtonActive(false);
             setTimeout(() => {
                 setLoading(false);
                 setButtonActive(true);
-                toast.success(
-                    "Your Year " +
-                        formEvent.yearGroup +
-                        " " +
-                        formEvent.subject +
-                        " lesson plan is ready!",
-                    { duration: 3000 }
-                );
+                setLessonPlanGenerated(true);
             }, 4000);
         }
-    }, [formEvent.subject, formEvent.yearGroup, generated, open]);
+    }, [
+        formEvent.subject,
+        formEvent.yearGroup,
+        lessonPlanGenerated,
+        open,
+        showViewLessonButton,
+    ]);
 
     useEffect(() => {
         setSelectedEvent(formEvent);
@@ -81,25 +85,34 @@ export default function EventForm({
         const db = getDatabase();
         const date = moment(selectedEvent.dateTime).format("YYYY-MM-DD");
         const time = moment(selectedEvent.dateTime).format("HH:mm");
+        const userId = user.uid;
 
-        // The path to the event in the database.
-        // Replace `auth.currentUser.uid` with the actual user's ID.
-        const eventRef = ref(db, `/users/${user.uid}/dates/${date}/event`);
+        if (!date || !userId) {
+            toast.error("Error saving lesson");
+            return;
+        }
 
-        let eventToSave = { ...selectedEvent, dateTime: time }; // Remove the date part from dateTime
+        let eventToSave = {
+            ...selectedEvent,
+            dateTime: time,
+        };
+
+        if (items) {
+            eventToSave.lessonObjectives = items;
+        }
 
         if (selectedEvent.id) {
-            // If the event already exists
-            set(ref(db, `${eventRef}/${selectedEvent.id}`), eventToSave);
-            setEvents((events) =>
-                events.map((event) =>
-                    event.dateTime === selectedEvent.dateTime
-                        ? selectedEvent
-                        : event
-                )
-            );
+            // Updating an existing event
+            const eventId = selectedEvent.id;
+            if (!eventId) {
+                toast.error("Error saving lesson");
+                return;
+            }
+            const path = `users/${userId}/dates/${date}/event/${eventId}`;
+            set(ref(db, path), eventToSave);
         } else {
-            // If the event is new
+            const eventRef = ref(db, `/users/${user.uid}/dates/${date}/event`);
+
             const newEventRef = push(eventRef);
             set(newEventRef, eventToSave).then(() => {
                 setEvents((events) => [
@@ -120,7 +133,7 @@ export default function EventForm({
     };
 
     const handleClose = () => {
-        if (formEvent.subject === "" && formEvent.topic === "") {
+        if (isNewEvent) {
             handleDelete();
         }
         setOpen(false);
@@ -130,6 +143,20 @@ export default function EventForm({
         setFormEvent((event) => ({
             ...event,
             color: color,
+        }));
+    };
+
+    const handleSubjectChange = (subject) => {
+        setFormEvent((event) => ({
+            ...event,
+            subject: subject,
+        }));
+    };
+
+    const handleTopicChange = (topic) => {
+        setFormEvent((event) => ({
+            ...event,
+            topic: topic,
         }));
     };
 
@@ -177,16 +204,14 @@ export default function EventForm({
                                                 <div className="flex items-start justify-between space-x-3">
                                                     <div className="space-y-1">
                                                         <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
-                                                            {formEvent.subject ===
-                                                            ""
+                                                            {isNewEvent
                                                                 ? "New Lesson"
                                                                 : formEvent.subject +
                                                                   " - Year " +
                                                                   formEvent.yearGroup}
                                                         </Dialog.Title>
                                                         <p className="text-sm text-gray-500">
-                                                            {formEvent.subject ===
-                                                            ""
+                                                            {isNewEvent
                                                                 ? "Get started by filling in the information below to create your new lesson."
                                                                 : formEvent.topic}
                                                         </p>
@@ -221,7 +246,7 @@ export default function EventForm({
                                                         </button>
                                                     </div>
                                                 </div>
-                                                {formEvent.subject !== "" &&
+                                                {!isNewEvent &&
                                                 showViewLessonButton &&
                                                 !loading ? (
                                                     <button
@@ -337,6 +362,12 @@ export default function EventForm({
                                                             value={
                                                                 formEvent.subject
                                                             }
+                                                            onChange={(e) =>
+                                                                handleSubjectChange(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -359,6 +390,12 @@ export default function EventForm({
                                                             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                                             value={
                                                                 formEvent.topic
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleTopicChange(
+                                                                    e.target
+                                                                        .value
+                                                                )
                                                             }
                                                         />
                                                     </div>
@@ -564,7 +601,7 @@ export default function EventForm({
                                                         handleSubmit(e);
                                                     }}
                                                 >
-                                                    {formEvent.subject === ""
+                                                    {isNewEvent
                                                         ? "Create"
                                                         : "Save"}
                                                 </button>

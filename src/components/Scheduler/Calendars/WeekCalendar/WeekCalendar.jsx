@@ -9,6 +9,7 @@ import { Menu, Transition } from "@headlessui/react";
 import Event from "./Event/Event";
 import moment from "moment";
 import NavBar from "@/components/common/NavBar";
+import { getRandomColor } from "@/styles/colors";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -20,6 +21,7 @@ export default function WeekCalendar({
     setSelectedEvent,
     events,
     setEvents,
+    setIsNewEvent,
 }) {
     const container = useRef(null);
     const containerNav = useRef(null);
@@ -68,7 +70,7 @@ export default function WeekCalendar({
     const now = new Date();
     const minutesIntoDay = now.getHours() * 60 + now.getMinutes();
     const totalMinutesInDay = 24 * 60;
-    const topPosition = (minutesIntoDay / totalMinutesInDay) * 100;
+    // const topPosition = (minutesIntoDay / totalMinutesInDay) * 100;
     const currentDay = now.getDay();
     const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -94,9 +96,11 @@ export default function WeekCalendar({
                 clickedTime.isSameOrAfter(eventStartTime) &&
                 clickedTime.isSameOrBefore(eventEndTime)
             ) {
+                setIsNewEvent(false);
                 return true;
             }
         }
+        setIsNewEvent(true);
         return false;
     };
 
@@ -120,7 +124,7 @@ export default function WeekCalendar({
             title: "",
             dateTime: clickedDateTime,
             duration: 60,
-            color: "blue",
+            color: getRandomColor(),
             day: clickedDay + 1,
             subject: "",
             topic: "",
@@ -313,7 +317,7 @@ export default function WeekCalendar({
                                             position: "relative", // You need relative positioning here for the child absolute positioning to work correctly
                                         }}
                                     >
-                                        {currentDay === index && (
+                                        {/* {currentDay === index && (
                                             <div
                                                 style={{
                                                     position: "absolute",
@@ -325,7 +329,7 @@ export default function WeekCalendar({
                                                     zIndex: 10,
                                                 }}
                                             />
-                                        )}
+                                        )} */}
                                     </div>
                                 ))}
                                 <div className="col-start-8 row-span-full w-8" />
@@ -339,9 +343,9 @@ export default function WeekCalendar({
                                         "1.75rem repeat(288, minmax(0, 1fr)) auto",
                                 }}
                             >
-                                {events.map((event) => (
+                                {events.map((event, index) => (
                                     <Event
-                                        key={event.dateTime + "event"}
+                                        key={event.dateTime + "event" + index}
                                         event={event}
                                         setOpenEvent={setOpenEvent}
                                         setSelectedEvent={setSelectedEvent}

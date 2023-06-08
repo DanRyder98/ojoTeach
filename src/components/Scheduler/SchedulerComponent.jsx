@@ -9,14 +9,15 @@ const SchedulerComponent = () => {
     const [openEvent, setOpenEvent] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [events, setEvents] = useState([]);
+    const [isNewEvent, setIsNewEvent] = useState(false);
     const user = useUser();
 
     useEffect(() => {
         if (!user) return;
 
         const db = getDatabase();
-        const startDate = moment().startOf("isoWeek").format("YYYY-MM-DD");
-        const endDate = moment().endOf("isoWeek").format("YYYY-MM-DD");
+        const startDate = moment().startOf("week").format("YYYY-MM-DD");
+        const endDate = moment().endOf("week").format("YYYY-MM-DD");
 
         const datesRef = ref(db, `/users/${user.uid}/dates`);
 
@@ -25,7 +26,9 @@ const SchedulerComponent = () => {
             const eventsData = [];
 
             for (let date in data) {
-                if (moment(date).isBetween(startDate, endDate)) {
+                if (
+                    moment(date).isBetween(startDate, endDate, undefined, "[]")
+                ) {
                     for (let eventId in data[date].event) {
                         eventsData.push({
                             ...data[date].event[eventId],
@@ -38,7 +41,6 @@ const SchedulerComponent = () => {
             }
 
             setEvents(eventsData);
-            console.log(eventsData);
         });
     }, [user]);
 
@@ -50,6 +52,7 @@ const SchedulerComponent = () => {
                 setSelectedEvent={setSelectedEvent}
                 events={events}
                 setEvents={setEvents}
+                setIsNewEvent={setIsNewEvent}
             />
             <EventForm
                 open={openEvent}
@@ -59,6 +62,7 @@ const SchedulerComponent = () => {
                 events={events}
                 setEvents={setEvents}
                 showViewLessonButton={true}
+                isNewEvent={isNewEvent}
             />
         </>
     );

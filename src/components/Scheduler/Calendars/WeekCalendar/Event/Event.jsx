@@ -35,7 +35,18 @@ export default function Event({ event, setOpenEvent, setSelectedEvent }) {
         setSelectedEvent(event);
         setOpenEvent(true);
     };
-    //relative mt-px flex sm:col-start-3
+
+    const getYearGroupString = (yearGroup) => {
+        switch (yearGroup) {
+            case null || undefined:
+                return "";
+            case 0:
+                return "Reception";
+            default:
+                return `Year ${yearGroup}`;
+        }
+    };
+
     return (
         <>
             <li
@@ -70,7 +81,7 @@ export default function Event({ event, setOpenEvent, setSelectedEvent }) {
                             textColors[event.color]
                         }`}
                     >
-                        {event.yearGroup && `Year ${event.yearGroup}`}
+                        {getYearGroupString(event.yearGroup)}
                     </p>
                     <p
                         className={`${

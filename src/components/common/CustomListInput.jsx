@@ -17,7 +17,9 @@ export default function CustomListInput({ items, setItems }) {
 
     const handleAddItem = () => {
         if (inputText.trim() !== "") {
-            setItems([...items, inputText.trim()]);
+            const nextIndex = items ? Object.keys(items).length : 0;
+            const newItems = { ...items, [nextIndex]: inputText.trim() };
+            setItems(newItems);
             setInputText("");
         }
     };
@@ -67,28 +69,29 @@ export default function CustomListInput({ items, setItems }) {
                 </div>
                 <div className="sm:col-start-2 sm:col-end-4">
                     <ul role="list" className="divide-y divide-gray-100">
-                        {items.map((item, index) => (
-                            <li
-                                key={index + "textListItem"}
-                                className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 rounded-lg py-5 hover:bg-gray-50 sm:flex-nowrap"
-                            >
-                                <div>
-                                    <p className="pl-3 text-sm leading-6 text-gray-900">
-                                        <a className="">• {item}</a>
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        handleRemoveItem(index);
-                                    }}
+                        {items &&
+                            Object.values(items).map((item, index) => (
+                                <li
+                                    key={index + "textListItem"}
+                                    className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 rounded-lg py-5 hover:bg-gray-50 sm:flex-nowrap"
                                 >
-                                    <XMarkIcon
-                                        className="ml-4 mr-4 h-5 w-5 text-gray-400"
-                                        aria-hidden="true"
-                                    />
-                                </button>
-                            </li>
-                        ))}
+                                    <div>
+                                        <p className="pl-3 text-sm leading-6 text-gray-900">
+                                            <a className="">• {item}</a>
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            handleRemoveItem(index);
+                                        }}
+                                    >
+                                        <XMarkIcon
+                                            className="ml-4 mr-4 h-5 w-5 text-gray-400"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                </li>
+                            ))}
                     </ul>
                 </div>
             </div>

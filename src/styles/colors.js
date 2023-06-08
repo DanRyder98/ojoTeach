@@ -1,3 +1,15 @@
+export const colors = {
+    blue: "blue",
+    red: "red",
+    yellow: "yellow",
+};
+
+export const getRandomColor = () => {
+    const colorKeys = Object.keys(colors);
+    const randomIndex = Math.floor(Math.random() * colorKeys.length);
+    return colors[colorKeys[randomIndex]];
+};
+
 export const eventColors = {
     blue: "bg-blue-100 hover:bg-blue-200",
     red: "bg-red-100 hover:bg-red-200",
