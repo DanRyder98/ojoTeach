@@ -96,14 +96,11 @@ export default function EventForm({
     }, [formEvent, setSelectedEvent]);
 
     useEffect(() => {
-        setRecurringSelected(setInitialRecurringSelected());
-    }, [selectedEvent]);
-
-    useEffect(() => {
         if (selectedEvent) {
             setFormEvent(selectedEvent);
             setItems(selectedEvent.lessonObjectives);
         }
+        setRecurringSelected(setInitialRecurringSelected());
     }, [selectedEvent]);
 
     function setInitialRecurringSelected() {
@@ -306,7 +303,15 @@ export default function EventForm({
         const eventId = formEvent.id;
         const userId = user.uid;
 
-        if (!date || !eventId || !userId) {
+        if (!eventId) {
+            // remove lesson from local state
+            const newEvents = events.filter((event) => event.id !== eventId);
+            setEvents(newEvents);
+            setOpen(false);
+            return;
+        }
+
+        if (!date || !userId) {
             toast.error("Error deleting lesson");
             return;
         }
@@ -350,6 +355,14 @@ export default function EventForm({
             ...event,
             color: color,
         }));
+    };
+
+    const handleRecurringChange = (recurringOptionId) => {
+        setEventEdited(true);
+        const recurringSelected = recurringOptions.find(
+            (option) => option.id === recurringOptionId
+        );
+        setRecurringSelected(recurringSelected);
     };
 
     const handleSubjectChange = (subject) => {
@@ -585,8 +598,12 @@ export default function EventForm({
                                                                     value={
                                                                         recurringSelected
                                                                     }
-                                                                    onChange={
-                                                                        setRecurringSelected
+                                                                    onChange={(
+                                                                        e
+                                                                    ) =>
+                                                                        handleRecurringChange(
+                                                                            e.id
+                                                                        )
                                                                     }
                                                                 >
                                                                     {({

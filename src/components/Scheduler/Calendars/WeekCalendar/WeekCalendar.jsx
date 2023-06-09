@@ -94,7 +94,7 @@ export default function WeekCalendar({
 
             if (
                 clickedTime.isSameOrAfter(eventStartTime) &&
-                clickedTime.isSameOrBefore(eventEndTime)
+                clickedTime.isSameOrBefore(eventEndTime - 1)
             ) {
                 setIsNewEvent(false);
                 return true;

@@ -20,6 +20,9 @@ const SchedulerComponent = () => {
             weekStartDate,
             weekEndDate
         ) => {
+            // if instances doesn't contain at least one date, return false
+            if (!recurringEvent.instances) return false;
+
             let instanceDate = Object.keys(recurringEvent.instances)[0]; // assuming instances contain at least one date
             let nextOccurrence = moment(instanceDate);
 

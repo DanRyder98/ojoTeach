@@ -78,13 +78,15 @@ export default function Event({ event, setOpenEvent, setSelectedEvent }) {
                     >
                         {event.subject}
                     </p>
-                    <p
-                        className={`order-1 font-semibold ${
-                            textColors[event.color]
-                        }`}
-                    >
-                        {getYearGroupString(event.yearGroup)}
-                    </p>
+                    {event.yearGroup && (
+                        <p
+                            className={`order-1 font-semibold ${
+                                textColors[event.color]
+                            }`}
+                        >
+                            {getYearGroupString(event.yearGroup)}
+                        </p>
+                    )}
                     <p
                         className={`${
                             textColorsLight[event.color]
