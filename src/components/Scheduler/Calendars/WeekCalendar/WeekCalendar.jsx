@@ -235,7 +235,7 @@ export default function WeekCalendar({
             </NavBar>
             <div
                 ref={container}
-                className="isolate flex flex-auto flex-col overflow-auto bg-white"
+                className="isolate flex flex-auto flex-col bg-white"
             >
                 <div
                     style={{ width: "165%" }}
