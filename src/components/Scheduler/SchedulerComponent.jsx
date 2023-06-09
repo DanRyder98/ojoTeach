@@ -58,6 +58,15 @@ const SchedulerComponent = () => {
 
             let eventsData = [];
 
+
+            const updateEvents = (newEvents) => {
+                eventsData = eventsData.concat(newEvents);
+
+                // Update state here
+                setEvents(eventsData);
+                setLoading(false);
+            };
+
             // Fetch non-recurring events
             onValue(datesRef, (snapshot) => {
                 const data = snapshot.val();
@@ -141,14 +150,6 @@ const SchedulerComponent = () => {
                 });
                 updateEvents(recurringEventsData);
             });
-
-            const updateEvents = (newEvents) => {
-                eventsData = eventsData.concat(newEvents);
-
-                // Update state here
-                setEvents(eventsData);
-                setLoading(false);
-            };
         };
 
         fetchEvents();
