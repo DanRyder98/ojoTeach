@@ -23,6 +23,7 @@ export default function WeekCalendar({
     setEvents,
     setIsNewEvent,
 }) {
+    console.log(events);
     const container = useRef(null);
     const containerNav = useRef(null);
     const containerOffset = useRef(null);

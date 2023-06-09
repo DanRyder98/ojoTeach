@@ -96,7 +96,7 @@ const SchedulerComponent = () => {
                         }
                     }
                 }
-                updateEvents(eventsData);
+                // updateEvents(eventsData);
             });
 
             // Fetch recurring events
@@ -151,7 +151,9 @@ const SchedulerComponent = () => {
                         }
                     }
                 });
-                updateEvents(recurringEventsData);
+                // updateEvents(recurringEventsData);
+                setEvents(eventsData);
+                setLoading(false);
             });
         };
 
