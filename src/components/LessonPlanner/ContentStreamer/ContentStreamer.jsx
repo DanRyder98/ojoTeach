@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import { toast } from "react-hot-toast";
 
 const ContentStreamer = ({ selectedEvent }) => {
     const [stream, setStream] = useState("");
@@ -62,7 +63,13 @@ const ContentStreamer = ({ selectedEvent }) => {
 
     return (
         <>
-            <ReactMarkdown>{stream}</ReactMarkdown>
+            <div className="py-5">
+                <main>
+                    <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                        <ReactMarkdown>{stream}</ReactMarkdown>
+                    </div>
+                </main>
+            </div>
         </>
     );
 };

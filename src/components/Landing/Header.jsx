@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { Popover, Transition } from "@headlessui/react";
 import clsx from "clsx";
-
+import { FcGoogle } from "react-icons/fc";
 import { Button } from "@/components/Landing/Button";
 import { Container } from "@/components/Landing/Container";
 import { NavLink } from "@/components/Landing/NavLink";
@@ -10,6 +10,11 @@ import { NavLink } from "@/components/Landing/NavLink";
 import ProfileDropdown from "../common/ProfileDropdown/ProfileDropdown";
 import Image from "next/image";
 import ojoLogo from "@/images/logos/ojo_logo.svg";
+import { useUser } from "../common/UserContext";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "firebaseClient";
+import { useRouter } from "next/router";
+import { toast } from "react-hot-toast";
 
 function MobileNavLink({ href, children }) {
     return (
@@ -47,6 +52,20 @@ function MobileNavIcon({ open }) {
 }
 
 function MobileNavigation() {
+    const user = useUser();
+    const router = useRouter();
+
+    const handleGoogleLogin = async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+            router.push("/scheduler");
+        } catch (error) {
+            console.error("Error logging in:", error);
+            toast.error("Error signing in");
+        }
+    };
+
     return (
         <Popover>
             <Popover.Button
@@ -85,8 +104,24 @@ function MobileNavigation() {
                             Testimonials
                         </MobileNavLink>
                         <MobileNavLink href="#pricing">Pricing</MobileNavLink>
-                        <hr className="m-2 border-slate-300/40" />
-                        <MobileNavLink href="/login">Sign in</MobileNavLink>
+                        {user ? (
+                            <>
+                                <MobileNavLink href="/scheduler">
+                                    Calendar
+                                </MobileNavLink>
+                                <MobileNavLink href="/lessonPlanner">
+                                    Lesson Planner
+                                </MobileNavLink>
+                            </>
+                        ) : (
+                            <>
+                                <hr className="m-2 border-slate-300/40" />
+                                <button onClick={handleGoogleLogin}>
+                                    <FcGoogle className="inline-block mr-2" />
+                                    Sign in with Google
+                                </button>
+                            </>
+                        )}
                     </Popover.Panel>
                 </Transition.Child>
             </Transition.Root>
@@ -95,6 +130,8 @@ function MobileNavigation() {
 }
 
 export function Header() {
+    const user = useUser();
+
     return (
         <header className="py-10">
             <Container>
@@ -113,15 +150,29 @@ export function Header() {
                             <NavLink href="#features">Features</NavLink>
                             <NavLink href="#testimonials">Testimonials</NavLink>
                             <NavLink href="#pricing">Pricing</NavLink>
+                            {user && (
+                                <>
+                                    <NavLink href="/scheduler">
+                                        Calendar
+                                    </NavLink>
+                                    <NavLink href="/lessonPlanner">
+                                        Lesson Planner
+                                    </NavLink>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-x-5 md:gap-x-8">
-                        <Button href="/scheduler" color="blue">
-                            <span>
-                                Get started{" "}
-                                <span className="hidden lg:inline">today</span>
-                            </span>
-                        </Button>
+                        {!user && (
+                            <Button href="/scheduler" color="blue">
+                                <span>
+                                    Get started{" "}
+                                    <span className="hidden lg:inline">
+                                        today
+                                    </span>
+                                </span>
+                            </Button>
+                        )}
                         <div className="hidden md:block">
                             {/* <NavLink href="/login">Sign in</NavLink> */}
                             {/* <LoginComponent /> */}

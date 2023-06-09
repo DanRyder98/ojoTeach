@@ -45,7 +45,7 @@ const initialEvents = [
 ];
 
 const SchedulerComponent = () => {
-    const [openEvent, setOpenEvent] = useState(true);
+    const [openEvent, setOpenEvent] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [events, setEvents] = useState(initialEvents);
 

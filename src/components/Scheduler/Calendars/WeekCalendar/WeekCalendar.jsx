@@ -121,7 +121,6 @@ export default function WeekCalendar({
         }
 
         const newEvent = {
-            title: "",
             dateTime: clickedDateTime,
             duration: 60,
             color: getRandomColor(),
@@ -130,6 +129,7 @@ export default function WeekCalendar({
             topic: "",
             lessonObjectives: [],
             yearGroup: null,
+            recurring: false,
         };
         setSelectedEvent(newEvent);
         setEvents([...events, newEvent]);

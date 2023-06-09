@@ -1,19 +1,23 @@
 import { Fragment, useEffect, useState } from "react";
 import { XMarkIcon, BookOpenIcon } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import {
+    ChevronDownIcon,
+    CheckIcon,
+    ChevronUpDownIcon,
+} from "@heroicons/react/20/solid";
 import CustomListInput from "@/components/common/CustomListInput";
 import {
     eventColors,
     eventBorderColors,
     getRandomColor,
 } from "@/styles/colors";
-import { Menu, Transition, Dialog } from "@headlessui/react";
+import { Menu, Transition, Dialog, Listbox } from "@headlessui/react";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
-import { duration } from "moment";
-import { getDatabase, ref, set, push } from "firebase/database";
+import { getDatabase, ref, set, push, remove } from "firebase/database";
 import moment from "moment";
 import { useUser } from "@/components/common/UserContext";
+import Spinner from "@/components/common/Spinner";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -28,6 +32,7 @@ export default function EventForm({
     setEvents,
     showViewLessonButton = true,
     isNewEvent = false,
+    setIsNewEvent,
 }) {
     const [formEvent, setFormEvent] = useState(
         selectedEvent || {
@@ -38,37 +43,61 @@ export default function EventForm({
             lessonObjectives: [],
             yearGroup: null,
             duration: 1,
+            recurring: false,
         }
     );
     const [items, setItems] = useState(formEvent.lessonObjectives || {});
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(isNewEvent);
     const [buttonActive, setButtonActive] = useState(true);
     const [lessonPlanGenerated, setLessonPlanGenerated] = useState(false);
+    const [eventEdited, setEventEdited] = useState(false);
+
+    let recurringOptions = [
+        {
+            id: 1,
+            name: "Every week",
+            recurrenceType: "DAYS",
+            recurrenceValue: 7,
+        },
+        {
+            id: 2,
+            name: "Every 2 weeks",
+            recurrenceType: "DAYS",
+            recurrenceValue: 14,
+        },
+    ];
+    if (isNewEvent) {
+        recurringOptions = [
+            { id: 0, name: "Never" },
+            {
+                id: 1,
+                name: "Every week",
+                recurrenceType: "DAYS",
+                recurrenceValue: 7,
+            },
+            {
+                id: 2,
+                name: "Every 2 weeks",
+                recurrenceType: "DAYS",
+                recurrenceValue: 14,
+            },
+        ];
+    }
+
+    const [recurringSelected, setRecurringSelected] = useState(
+        setInitialRecurringSelected()
+    );
 
     const user = useUser();
     const router = useRouter();
 
     useEffect(() => {
-        if (!lessonPlanGenerated && open && showViewLessonButton) {
-            setLoading(true);
-            setButtonActive(false);
-            setTimeout(() => {
-                setLoading(false);
-                setButtonActive(true);
-                setLessonPlanGenerated(true);
-            }, 4000);
-        }
-    }, [
-        formEvent.subject,
-        formEvent.yearGroup,
-        lessonPlanGenerated,
-        open,
-        showViewLessonButton,
-    ]);
-
-    useEffect(() => {
         setSelectedEvent(formEvent);
     }, [formEvent, setSelectedEvent]);
+
+    useEffect(() => {
+        setRecurringSelected(setInitialRecurringSelected());
+    }, [selectedEvent]);
 
     useEffect(() => {
         if (selectedEvent) {
@@ -77,30 +106,144 @@ export default function EventForm({
         }
     }, [selectedEvent]);
 
+    function setInitialRecurringSelected() {
+        let indexModifier = 0;
+        if (!isNewEvent) indexModifier = 1;
+        return (
+            recurringOptions[
+                selectedEvent?.recurrenceType === "DAYS" &&
+                selectedEvent?.recurrenceValue === 7
+                    ? 1 - indexModifier
+                    : selectedEvent?.recurrenceType === "DAYS" &&
+                      selectedEvent?.recurrenceValue === 14
+                    ? 2 - indexModifier
+                    : 0
+            ] || recurringOptions[0]
+        );
+    }
+
     const handleSubmit = (e) => {
         if (!user) return;
 
         e.preventDefault();
 
-        const db = getDatabase();
-        const date = moment(selectedEvent.dateTime).format("YYYY-MM-DD");
-        const time = moment(selectedEvent.dateTime).format("HH:mm");
-        const userId = user.uid;
+        try {
+            const db = getDatabase();
+            const date = moment(selectedEvent.dateTime).format("YYYY-MM-DD");
+            const time = moment(selectedEvent.dateTime).format("HH:mm");
+            const userId = user.uid;
 
-        if (!date || !userId) {
-            toast.error("Error saving lesson");
-            return;
+            if (!date || !userId) {
+                toast.error("Error saving lesson");
+                return;
+            }
+
+            let eventToSave = {
+                ...selectedEvent,
+                dateTime: time,
+                recurring: recurringSelected.id !== 0,
+                recurrenceType:
+                    recurringOptions[recurringSelected.id].recurrenceType,
+                recurrenceValue:
+                    recurringOptions[recurringSelected.id].recurrenceValue,
+            };
+
+            if (items) {
+                eventToSave.lessonObjectives = items;
+            }
+
+            if (eventToSave.recurring === false) {
+                saveNonRecurringEvent(eventToSave, userId, date, db);
+            } else {
+                saveRecurringEvent(eventToSave, userId, date, db);
+            }
+        } catch (error) {
+            toast.error("Sorry, there was a problem saving your lesson");
+            console.error(error);
         }
+    };
 
-        let eventToSave = {
-            ...selectedEvent,
-            dateTime: time,
-        };
+    function saveRecurringEvent(eventToSave, userId, date, db) {
+        if (selectedEvent.id) {
+            // Updating an existing event
+            const eventId = selectedEvent.id;
+            if (!eventId) {
+                toast.error("Error saving lesson");
+                return;
+            }
+            // eventToSave minus topic and lessonObjectives
+            const recurringEventToSave = {
+                ...eventToSave,
+                topic: null,
+                lessonObjectives: null,
+            };
+            const path = `users/${userId}/recurringEvents/${eventId}`;
+            set(ref(db, path), recurringEventToSave)
+                .then(() => {
+                    // Write is complete
+                    toast.success("Lesson updated successfully");
+                    setViewLessonButtonLoading();
+                    setEventEdited(false);
+                })
+                .catch((error) => {
+                    // Handle any errors here
+                    toast.error("Error saving lesson: " + error.message);
+                });
 
-        if (items) {
-            eventToSave.lessonObjectives = items;
+            // eventToSave minus dateTime, duration, color, subject, yearGroup
+            const instanceEventToSave = {
+                topic: eventToSave.topic,
+                lessonObjectives: eventToSave.lessonObjectives,
+            };
+            const instancePath = `users/${userId}/recurringEvents/${eventId}/instances/${date}`;
+            set(ref(db, instancePath), instanceEventToSave)
+                .then(() => {
+                    // Write is complete
+                    toast.success("Lesson updated successfully");
+                    setViewLessonButtonLoading();
+                    setEventEdited(false);
+                })
+                .catch((error) => {
+                    // Handle any errors here
+                    toast.error("Error saving lesson: " + error.message);
+                });
+        } else {
+            // Creating a new event
+            const eventRef = ref(db, `/users/${user.uid}/recurringEvents`);
+            const newEventRef = push(eventRef);
+            set(newEventRef, eventToSave)
+                .then(() => {
+                    // Write is complete
+                    toast.success("Lesson created successfully");
+                    setViewLessonButtonLoading();
+                    setEventEdited(false);
+                })
+                .catch((error) => {
+                    // Handle any errors here
+                    toast.error("Error saving lesson: " + error.message);
+                });
+
+            // eventToSave minus dateTime, duration, color, subject, yearGroup
+            const instanceEventToSave = {
+                topic: eventToSave.topic,
+                lessonObjectives: eventToSave.lessonObjectives,
+            };
+            const instancePath = `users/${userId}/recurringEvents/${newEventRef.key}/instances/${date}`;
+            set(ref(db, instancePath), instanceEventToSave)
+                .then(() => {
+                    // Write is complete
+                    toast.success("Lesson updated successfully");
+                    setViewLessonButtonLoading();
+                    setEventEdited(false);
+                })
+                .catch((error) => {
+                    // Handle any errors here
+                    toast.error("Error saving lesson: " + error.message);
+                });
         }
+    }
 
+    function saveNonRecurringEvent(eventToSave, userId, date, db) {
         if (selectedEvent.id) {
             // Updating an existing event
             const eventId = selectedEvent.id;
@@ -109,27 +252,89 @@ export default function EventForm({
                 return;
             }
             const path = `users/${userId}/dates/${date}/event/${eventId}`;
-            set(ref(db, path), eventToSave);
+            set(ref(db, path), eventToSave)
+                .then(() => {
+                    // Write is complete
+                    toast.success("Lesson updated successfully");
+                    setViewLessonButtonLoading();
+                    setEventEdited(false);
+                })
+                .catch((error) => {
+                    // Handle any errors here
+                    toast.error("Error saving lesson: " + error.message);
+                });
         } else {
+            // Creating a new event
             const eventRef = ref(db, `/users/${user.uid}/dates/${date}/event`);
-
             const newEventRef = push(eventRef);
-            set(newEventRef, eventToSave).then(() => {
-                setEvents((events) => [
-                    ...events,
-                    { ...eventToSave, id: newEventRef.key },
-                ]);
-            });
+            set(newEventRef, eventToSave)
+                .then(() => {
+                    // Write is complete
+                    toast.success("Lesson created successfully");
+                    setViewLessonButtonLoading();
+                    setEventEdited(false);
+                    setIsNewEvent(false);
+                    setEvents((events) => [
+                        ...events,
+                        { ...eventToSave, id: newEventRef.key },
+                    ]);
+                })
+                .catch((error) => {
+                    // Handle any errors here
+                    toast.error("Error creating lesson: " + error.message);
+                });
         }
+    }
 
-        setOpen(false);
-    };
+    function setViewLessonButtonLoading() {
+        if (open && showViewLessonButton) {
+            setLoading(true);
+            setButtonActive(false);
+            setTimeout(() => {
+                setLoading(false);
+                setButtonActive(true);
+                setLessonPlanGenerated(true);
+            }, 4000);
+        }
+    }
 
     const handleDelete = () => {
-        const newEvents = events.filter((event) => event.id !== formEvent.id);
-        setEvents(newEvents);
+        if (!user) return;
 
-        setOpen(false);
+        const db = getDatabase();
+        const date = moment(formEvent.dateTime).format("YYYY-MM-DD");
+        const eventId = formEvent.id;
+        const userId = user.uid;
+
+        if (!date || !eventId || !userId) {
+            toast.error("Error deleting lesson");
+            return;
+        }
+
+        // Reference to the event in Firebase Realtime Database
+        const eventRef = ref(
+            db,
+            `users/${userId}/dates/${date}/event/${eventId}`
+        );
+
+        // Remove the event from Firebase
+        remove(eventRef)
+            .then(() => {
+                // Filter out the deleted event from the local state
+                const newEvents = events.filter(
+                    (event) => event.id !== eventId
+                );
+                setEvents(newEvents);
+
+                // Optionally, show a success message
+                toast.success("Lesson deleted successfully");
+
+                setOpen(false);
+            })
+            .catch((error) => {
+                // Handle errors here
+                toast.error("Error deleting lesson");
+            });
     };
 
     const handleClose = () => {
@@ -140,6 +345,7 @@ export default function EventForm({
     };
 
     const handleColorChange = (color) => {
+        setEventEdited(true);
         setFormEvent((event) => ({
             ...event,
             color: color,
@@ -147,6 +353,7 @@ export default function EventForm({
     };
 
     const handleSubjectChange = (subject) => {
+        setEventEdited(true);
         setFormEvent((event) => ({
             ...event,
             subject: subject,
@@ -154,6 +361,7 @@ export default function EventForm({
     };
 
     const handleTopicChange = (topic) => {
+        setEventEdited(true);
         setFormEvent((event) => ({
             ...event,
             topic: topic,
@@ -161,19 +369,28 @@ export default function EventForm({
     };
 
     const handleChangeYearGroup = (index) => {
+        setEventEdited(true);
         setFormEvent((event) => ({
             ...event,
             yearGroup: index,
         }));
     };
 
-    const handleChangeDuration = () => {
-        console.log("change duration called");
+    const handleChangeDuration = (duration) => {
+        setEventEdited(true);
+        setFormEvent((event) => ({
+            ...event,
+            duration: duration,
+        }));
     };
 
     const handleGoToLessonPlan = () => {
         localStorage.setItem("selectedEvent", JSON.stringify(selectedEvent));
         router.push("/lessonPlanner");
+    };
+
+    const handleRegenerateLessonPlan = () => {
+        setLessonPlanGenerated(false);
     };
 
     return (
@@ -255,6 +472,7 @@ export default function EventForm({
                                                         onClick={
                                                             handleGoToLessonPlan
                                                         }
+                                                        disabled={!buttonActive}
                                                     >
                                                         <BookOpenIcon
                                                             className="-ml-0.5 h-5 w-5"
@@ -263,6 +481,7 @@ export default function EventForm({
                                                         View your lesson plan
                                                     </button>
                                                 ) : (
+                                                    !isNewEvent &&
                                                     formEvent.subject !== "" &&
                                                     showViewLessonButton && (
                                                         <button
@@ -270,29 +489,35 @@ export default function EventForm({
                                                             className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
                                                             disabled
                                                         >
-                                                            <svg
-                                                                aria-hidden="true"
-                                                                class="w-5 h-5 mr-1 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
-                                                                viewBox="0 0 100 101"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                                                    fill="currentColor"
-                                                                />
-                                                                <path
-                                                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                                                    fill="currentFill"
-                                                                />
-                                                            </svg>
-                                                            <span class="sr-only">
+                                                            <Spinner />
+                                                            <span className="sr-only">
                                                                 Loading...
                                                             </span>
                                                             Loading...
                                                         </button>
                                                     )
                                                 )}
+                                                {!isNewEvent &&
+                                                    !showViewLessonButton &&
+                                                    eventEdited && (
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
+                                                            onClick={
+                                                                handleRegenerateLessonPlan
+                                                            }
+                                                            disabled={
+                                                                !buttonActive
+                                                            }
+                                                        >
+                                                            <BookOpenIcon
+                                                                className="-ml-0.5 h-5 w-5"
+                                                                aria-hidden="true"
+                                                            />
+                                                            Regenerate your
+                                                            lesson plan
+                                                        </button>
+                                                    )}
                                             </div>
                                             {/* Divider container */}
                                             <div className="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
@@ -342,6 +567,128 @@ export default function EventForm({
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                {/* Recurring */}
+                                                {isNewEvent ||
+                                                    (selectedEvent?.recurring && (
+                                                        <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
+                                                            <div>
+                                                                <label
+                                                                    htmlFor="project-name"
+                                                                    className="block text-sm font-medium leading-6 text-gray-900 sm:mt-1.5"
+                                                                >
+                                                                    Repeat
+                                                                </label>
+                                                            </div>
+                                                            <div className="sm:col-span-2">
+                                                                <Listbox
+                                                                    value={
+                                                                        recurringSelected
+                                                                    }
+                                                                    onChange={
+                                                                        setRecurringSelected
+                                                                    }
+                                                                >
+                                                                    {({
+                                                                        open,
+                                                                    }) => (
+                                                                        <>
+                                                                            <div className="relative mt-2">
+                                                                                <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                                                    <span className="block truncate">
+                                                                                        {
+                                                                                            recurringSelected.name
+                                                                                        }
+                                                                                    </span>
+                                                                                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                                                                        <ChevronUpDownIcon
+                                                                                            className="h-5 w-5 text-gray-400"
+                                                                                            aria-hidden="true"
+                                                                                        />
+                                                                                    </span>
+                                                                                </Listbox.Button>
+
+                                                                                <Transition
+                                                                                    show={
+                                                                                        open
+                                                                                    }
+                                                                                    as={
+                                                                                        Fragment
+                                                                                    }
+                                                                                    leave="transition ease-in duration-100"
+                                                                                    leaveFrom="opacity-100"
+                                                                                    leaveTo="opacity-0"
+                                                                                >
+                                                                                    <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                                                                                        {recurringOptions.map(
+                                                                                            (
+                                                                                                person
+                                                                                            ) => (
+                                                                                                <Listbox.Option
+                                                                                                    key={
+                                                                                                        person.id
+                                                                                                    }
+                                                                                                    className={({
+                                                                                                        active,
+                                                                                                    }) =>
+                                                                                                        classNames(
+                                                                                                            active
+                                                                                                                ? "bg-indigo-600 text-white"
+                                                                                                                : "text-gray-900",
+                                                                                                            "relative cursor-default select-none py-2 pl-3 pr-9"
+                                                                                                        )
+                                                                                                    }
+                                                                                                    value={
+                                                                                                        person
+                                                                                                    }
+                                                                                                >
+                                                                                                    {({
+                                                                                                        recurringSelected,
+                                                                                                        active,
+                                                                                                    }) => (
+                                                                                                        <>
+                                                                                                            <span
+                                                                                                                className={classNames(
+                                                                                                                    recurringSelected
+                                                                                                                        ? "font-semibold"
+                                                                                                                        : "font-normal",
+                                                                                                                    "block truncate"
+                                                                                                                )}
+                                                                                                            >
+                                                                                                                {
+                                                                                                                    person.name
+                                                                                                                }
+                                                                                                            </span>
+
+                                                                                                            {recurringSelected ? (
+                                                                                                                <span
+                                                                                                                    className={classNames(
+                                                                                                                        active
+                                                                                                                            ? "text-white"
+                                                                                                                            : "text-indigo-600",
+                                                                                                                        "absolute inset-y-0 right-0 flex items-center pr-4"
+                                                                                                                    )}
+                                                                                                                >
+                                                                                                                    <CheckIcon
+                                                                                                                        className="h-5 w-5"
+                                                                                                                        aria-hidden="true"
+                                                                                                                    />
+                                                                                                                </span>
+                                                                                                            ) : null}
+                                                                                                        </>
+                                                                                                    )}
+                                                                                                </Listbox.Option>
+                                                                                            )
+                                                                                        )}
+                                                                                    </Listbox.Options>
+                                                                                </Transition>
+                                                                            </div>
+                                                                        </>
+                                                                    )}
+                                                                </Listbox>
+                                                            </div>
+                                                        </div>
+                                                    ))}
 
                                                 {/* Subject */}
                                                 <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
@@ -554,14 +901,20 @@ export default function EventForm({
                                                                     id="duration"
                                                                     name="duration"
                                                                     type="number"
-                                                                    min="0.5"
-                                                                    max="120"
-                                                                    step="0.5"
+                                                                    min="1"
+                                                                    max="1000"
+                                                                    step="1"
                                                                     value={
                                                                         formEvent.duration
                                                                     }
-                                                                    onChange={
-                                                                        handleChangeDuration
+                                                                    onChange={(
+                                                                        e
+                                                                    ) =>
+                                                                        handleChangeDuration(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        )
                                                                     }
                                                                     className="block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
                                                                 />
@@ -582,11 +935,18 @@ export default function EventForm({
                                             <div className="flex justify-end space-x-3">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                                                    className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                                                        isNewEvent
+                                                            ? "bg-white border border-indigo-500 text-indigo-500"
+                                                            : "bg-red-600 text-white hover:bg-red-500"
+                                                    } `}
                                                     onClick={handleDelete}
                                                 >
-                                                    Delete
+                                                    {isNewEvent
+                                                        ? "Cancel"
+                                                        : "Delete"}
                                                 </button>
+
                                                 {/* <button
                                                     type="button"
                                                     className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
@@ -596,10 +956,17 @@ export default function EventForm({
                                                 </button> */}
                                                 <button
                                                     type="submit"
-                                                    className="inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                    className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+                                                        eventEdited
+                                                            ? "bg-indigo-600 hover:bg-indigo-500"
+                                                            : "bg-indigo-200 hover:bg-indigo-300 cursor-not-allowed"
+                                                    }`}
                                                     onClick={(e) => {
-                                                        handleSubmit(e);
+                                                        if (eventEdited) {
+                                                            handleSubmit(e);
+                                                        }
                                                     }}
+                                                    disabled={!eventEdited}
                                                 >
                                                     {isNewEvent
                                                         ? "Create"

@@ -15,6 +15,43 @@
                 "dates": {
                     "$date": {
                         ".validate": "newData.hasChildren()",
+                        "recurringEvents": {
+                            "$recurringEvent_id": {
+                                ".validate": "newData.hasChildren(['dateTime', 'duration', 'color', 'subject', 'yearGroup'])",
+                                "recurrenceType": {
+                                    ".validate": "newData.isString() && newData.val().length > 0"
+                                },
+                                "recurrenceValue": {
+                                    ".validate": "newData.isNumber() && newData.val() > 0"
+                                },
+                                "dateTime": {
+                                    ".validate": "newData.isString() && newData.val().length > 0"
+                                },
+                                "duration": {
+                                    ".validate": "newData.isNumber() && newData.val() > 0"
+                                },
+                                "color": {
+                                    ".validate": "newData.isString() && newData.val().length > 0"
+                                },
+                                "subject": {
+                                    ".validate": "newData.isString() && newData.val().length > 0"
+                                },
+                                "yearGroup": {
+                                    ".validate": "newData.isNumber() && newData.val() >= 0"
+                                },
+                                "$instanceDate": {
+                                    "topic": {
+                                        ".validate": "newData.isString() && newData.val().length > 0"
+                                    },
+                                    "lessonObjectives": {
+                                        ".validate": "newData.hasChildren()",
+                                        "$objective": {
+                                            ".validate": "newData.isString()"
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         "events": {
                             "$event_id": {
                                 ".validate": "newData.hasChildren(['dateTime', 'duration', 'color', 'subject', 'topic', 'lessonObjectives', 'yearGroup'])",

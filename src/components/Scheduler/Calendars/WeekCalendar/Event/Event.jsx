@@ -52,7 +52,9 @@ export default function Event({ event, setOpenEvent, setSelectedEvent }) {
             <li
                 key={event.dateTime + "event"}
                 className={`relative mt-px ${
-                    isMobile ? "" : eventColumn[event.day]
+                    isMobile
+                        ? eventColumn[event.day + 1]
+                        : eventColumn[event.day]
                 } ${isMobile ? "sm:" + eventColumn[event.day] : ""} flex`}
                 style={{
                     gridRow: `${
