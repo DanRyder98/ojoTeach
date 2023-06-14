@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
+import { auth } from "firebaseClient";
 
 // Create Context object.
 export const UserContext = createContext();
@@ -9,7 +10,6 @@ export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const auth = getAuth();
         // This listener is called when the user logs in and when the user logs out
         const unsubscribe = onAuthStateChanged(auth, setUser);
         // Cleanup subscription on unmount

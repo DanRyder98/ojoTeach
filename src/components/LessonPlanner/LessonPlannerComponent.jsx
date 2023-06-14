@@ -78,7 +78,7 @@ const SchedulerComponent = () => {
                 setSelectedEvent={setSelectedEvent}
                 events={events}
                 setEvents={setEvents}
-                showViewLessonButton={false}
+                showFullForm={false}
             />
         </>
     );

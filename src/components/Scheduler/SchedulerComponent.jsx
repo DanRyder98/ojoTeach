@@ -12,14 +12,14 @@ const SchedulerComponent = () => {
     const [events, setEvents] = useState([]);
     const [isNewEvent, setIsNewEvent] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [weekStartDate, setWeekStartDate] = useState(
+        moment().startOf("week").format("YYYY-MM-DD")
+    );
+    const [weekEndDate, setWeekEndDate] = useState(moment().endOf("week").format("YYYY-MM-DD"));
     const user = useUser();
 
     useEffect(() => {
-        const isRecurringEventOccurringThisWeek = (
-            recurringEvent,
-            weekStartDate,
-            weekEndDate
-        ) => {
+        const isRecurringEventOccurringThisWeek = (recurringEvent) => {
             // if instances doesn't contain at least one date, return false
             if (!recurringEvent.instances) return false;
 
@@ -50,17 +50,11 @@ const SchedulerComponent = () => {
             setLoading(true); // Set loading to true before fetching data
 
             const db = getDatabase();
-            const weekStartDate = moment().startOf("week").format("YYYY-MM-DD");
-            const weekEndDate = moment().endOf("week").format("YYYY-MM-DD");
 
             const datesRef = ref(db, `/users/${user.uid}/dates`);
-            const recurringEventsRef = ref(
-                db,
-                `/users/${user.uid}/recurringEvents`
-            );
+            const recurringEventsRef = ref(db, `/users/${user.uid}/recurringEvents`);
 
             let eventsData = [];
-
 
             const updateEvents = (newEvents) => {
                 eventsData = eventsData.concat(newEvents);
@@ -75,22 +69,12 @@ const SchedulerComponent = () => {
                 const data = snapshot.val();
 
                 for (let date in data) {
-                    if (
-                        moment(date).isBetween(
-                            weekStartDate,
-                            weekEndDate,
-                            undefined,
-                            "[]"
-                        )
-                    ) {
+                    if (moment(date).isBetween(weekStartDate, weekEndDate, undefined, "[]")) {
                         for (let eventId in data[date].event) {
                             eventsData.push({
                                 ...data[date].event[eventId],
                                 id: eventId,
-                                dateTime:
-                                    date +
-                                    "T" +
-                                    data[date].event[eventId].dateTime,
+                                dateTime: date + "T" + data[date].event[eventId].dateTime,
                                 recurring: false,
                             });
                         }
@@ -115,18 +99,13 @@ const SchedulerComponent = () => {
                             weekEndDate
                         )
                     ) {
-                        recurringEventsData.push(recurringEvent);
+                        recurringEventsData.push({ ...recurringEvent, id: eventId });
                     }
                 }
 
                 // For each recurring event, calculate its occurrences in the current week
                 recurringEventsData.forEach((recurringEvent) => {
-                    const {
-                        recurrenceType,
-                        recurrenceValue,
-                        dateTime,
-                        instances,
-                    } = recurringEvent;
+                    const { recurrenceType, recurrenceValue, dateTime, instances } = recurringEvent;
                     let instanceDate = Object.keys(instances)[0];
                     let nextOccurrence = moment(instanceDate);
 
@@ -134,10 +113,7 @@ const SchedulerComponent = () => {
                         if (nextOccurrence.isSameOrAfter(weekStartDate)) {
                             eventsData.push({
                                 ...recurringEvent,
-                                dateTime:
-                                    nextOccurrence.format("YYYY-MM-DD") +
-                                    "T" +
-                                    dateTime,
+                                dateTime: nextOccurrence.format("YYYY-MM-DD") + "T" + dateTime,
                                 recurring: true,
                             });
                         }
@@ -158,7 +134,37 @@ const SchedulerComponent = () => {
         };
 
         fetchEvents();
-    }, [user]);
+    }, [user, weekEndDate, weekStartDate]);
+
+    const handleNextWeek = () => {
+        setWeekStartDate(
+            moment(weekStartDate)
+                .add(1, "weeks")
+
+                .format("YYYY-MM-DD")
+        );
+        setWeekEndDate(
+            moment(weekEndDate)
+                .add(1, "weeks")
+
+                .format("YYYY-MM-DD")
+        );
+    };
+
+    const handlePreviousWeek = () => {
+        setWeekStartDate(
+            moment(weekStartDate)
+                .subtract(1, "weeks")
+
+                .format("YYYY-MM-DD")
+        );
+        setWeekEndDate(
+            moment(weekEndDate)
+                .subtract(1, "weeks")
+
+                .format("YYYY-MM-DD")
+        );
+    };
 
     return (
         <>
@@ -180,6 +186,10 @@ const SchedulerComponent = () => {
                     events={events}
                     setEvents={setEvents}
                     setIsNewEvent={setIsNewEvent}
+                    nextWeek={handleNextWeek}
+                    previousWeek={handlePreviousWeek}
+                    weekStartDate={weekStartDate}
+                    weekEndDate={weekEndDate}
                 />
                 <EventForm
                     open={openEvent}
@@ -188,7 +198,7 @@ const SchedulerComponent = () => {
                     setSelectedEvent={setSelectedEvent}
                     events={events}
                     setEvents={setEvents}
-                    showViewLessonButton={true}
+                    showFullForm={true}
                     isNewEvent={isNewEvent}
                     setIsNewEvent={setIsNewEvent}
                 />

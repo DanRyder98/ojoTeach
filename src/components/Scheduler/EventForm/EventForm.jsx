@@ -306,6 +306,8 @@ export default function EventForm({
         if (!eventId) {
             // remove lesson from local state
             const newEvents = events.filter((event) => event.id !== eventId);
+            console.log(events);
+            console.log(newEvents);
             setEvents(newEvents);
             setOpen(false);
             return;

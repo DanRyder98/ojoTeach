@@ -15,6 +15,7 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
 }
 
+
 export default function WeekCalendar({
     setOpenEvent,
     selectedEvent,
@@ -22,8 +23,11 @@ export default function WeekCalendar({
     events,
     setEvents,
     setIsNewEvent,
+    nextWeek,
+    previousWeek,
+    weekStartDate,
+    weekEndDate,
 }) {
-    console.log(events);
     const container = useRef(null);
     const containerNav = useRef(null);
     const containerOffset = useRef(null);
@@ -55,7 +59,8 @@ export default function WeekCalendar({
     const days = [];
 
     for (let i = 0; i < 7; i++) {
-        const day = moment().day(i).format("ddd D");
+        // Use weekStartDate as the base date and add i days to it
+        const day = moment(weekStartDate).add(i, "days").format("ddd D");
         days.push(
             <div className="flex items-center justify-center py-3" key={i}>
                 <span>
@@ -84,12 +89,10 @@ export default function WeekCalendar({
     const calendarGridRef = useRef(); // Ref to the calendar grid container
 
     const checkIfEventExists = (dateTime) => {
+        console.log(events);
         for (let event of events) {
             const eventStartTime = moment(event.dateTime);
-            const eventEndTime = moment(event.dateTime).add(
-                event.duration,
-                "minutes"
-            );
+            const eventEndTime = moment(event.dateTime).add(event.duration, "minutes");
 
             const clickedTime = moment(dateTime);
 
@@ -106,13 +109,14 @@ export default function WeekCalendar({
     };
 
     const handleGridClick = (e) => {
-        const { top, left, height, width } =
-            calendarGridRef.current.getBoundingClientRect();
+        const { top, left, height, width } = calendarGridRef.current.getBoundingClientRect();
         const clickedHour = Math.floor(((e.clientY - top) / height) * 24); // Assuming 24 hours
         const clickedDay = Math.floor(((e.clientX - left) / width) * 7); // Assuming 7 days
-        const clickedDateTime = moment()
+
+        // Use weekStartDate as the base date and adjust the day and hour based on the click
+        const clickedDateTime = moment(weekStartDate)
+            .add(clickedDay, "days") // add the clickedDay to weekStartDate
             .hour(clickedHour)
-            .day(clickedDay)
             .minute(0)
             .second(0)
             .format();
@@ -137,6 +141,14 @@ export default function WeekCalendar({
         setOpenEvent(true);
     };
 
+    const handleNextWeek = () => {
+        nextWeek();
+    };
+
+    const handlePreviousWeek = () => {
+        previousWeek();
+    };
+
     return (
         <div className="flex h-full flex-col">
             <NavBar selectedPage={"scheduler"}>
@@ -154,8 +166,8 @@ export default function WeekCalendar({
                     </Link>
                 </div> */}
                     <h1 className="text-base font-semibold leading-6 text-gray-900 px-4">
-                        <time dateTime={moment.dateTime}>
-                            {moment().format("MMMM YYYY")}
+                        <time dateTime={moment(weekStartDate).dateTime}>
+                            {moment(weekStartDate).format("MMMM YYYY")}
                         </time>
                     </h1>
                     <div className="flex items-center">
@@ -167,38 +179,31 @@ export default function WeekCalendar({
                             <button
                                 type="button"
                                 className="flex items-center justify-center rounded-l-md py-2 pl-3 pr-4 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:px-2 md:hover:bg-gray-50"
+                                onClick={handlePreviousWeek}
                             >
                                 <span className="sr-only">Previous week</span>
-                                <ChevronLeftIcon
-                                    className="h-5 w-5"
-                                    aria-hidden="true"
-                                />
+                                <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
                             </button>
-                            <button
+                            {/* <button
                                 type="button"
                                 className="hidden px-3.5 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:relative md:block"
                             >
                                 Today
-                            </button>
+                            </button> */}
                             <span className="relative -mx-px h-5 w-px bg-gray-300 md:hidden" />
                             <button
                                 type="button"
                                 className="flex items-center justify-center rounded-r-md py-2 pl-4 pr-3 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:px-2 md:hover:bg-gray-50"
+                                onClick={handleNextWeek}
                             >
                                 <span className="sr-only">Next week</span>
-                                <ChevronRightIcon
-                                    className="h-5 w-5"
-                                    aria-hidden="true"
-                                />
+                                <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
                             </button>
                         </div>
                         <Menu as="div" className="relative ml-6 md:hidden">
                             <Menu.Button className="-mx-2 flex items-center rounded-full border border-transparent p-2 text-gray-400 hover:text-gray-500">
                                 <span className="sr-only">Open menu</span>
-                                <EllipsisHorizontalIcon
-                                    className="h-5 w-5"
-                                    aria-hidden="true"
-                                />
+                                <EllipsisHorizontalIcon className="h-5 w-5" aria-hidden="true" />
                             </Menu.Button>
 
                             <Transition
@@ -234,10 +239,7 @@ export default function WeekCalendar({
                     </div>
                 </header>
             </NavBar>
-            <div
-                ref={container}
-                className="isolate flex flex-auto flex-col bg-white"
-            >
+            <div ref={container} className="isolate flex flex-auto flex-col bg-white">
                 <div
                     style={{ width: "165%" }}
                     className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full"
@@ -275,25 +277,17 @@ export default function WeekCalendar({
                             {days}
                         </div>
                     </div>
-                    <div
-                        className="flex flex-auto"
-                        ref={calendarGridRef}
-                        onClick={handleGridClick}
-                    >
+                    <div className="flex flex-auto" ref={calendarGridRef} onClick={handleGridClick}>
                         <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100" />
                         <div className="grid flex-auto grid-cols-1 grid-rows-1">
                             {/* Horizontal lines */}
                             <div
                                 className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
                                 style={{
-                                    gridTemplateRows:
-                                        "repeat(48, minmax(3.5rem, 1fr))",
+                                    gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))",
                                 }}
                             >
-                                <div
-                                    ref={containerOffset}
-                                    className="row-end-1 h-7"
-                                ></div>
+                                <div ref={containerOffset} className="row-end-1 h-7"></div>
 
                                 {hours.map((hour, i) => (
                                     <Fragment key={i}>
@@ -340,8 +334,7 @@ export default function WeekCalendar({
                             <ol
                                 className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8"
                                 style={{
-                                    gridTemplateRows:
-                                        "1.75rem repeat(288, minmax(0, 1fr)) auto",
+                                    gridTemplateRows: "1.75rem repeat(288, minmax(0, 1fr)) auto",
                                 }}
                             >
                                 {events.map((event, index) => (
