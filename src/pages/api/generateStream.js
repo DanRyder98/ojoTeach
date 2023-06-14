@@ -1,6 +1,16 @@
 import { OpenAI } from "openai-streams/node";
 
-export default async function test(req, res) {
+const lessonPlanTemplate = `## Resources
+
+## Starter
+
+## Main
+
+## Plenary
+
+## Homework`;
+
+export default async function generateStream(req, res) {
     const lessonData = req.body;
 
     if (!lessonData) {
@@ -19,16 +29,15 @@ export default async function test(req, res) {
                 {
                     role: "system",
                     content:
-                        "You are a teacher who specializes in planning lessons.  You should respond in markdown when asked for a lesson plan.",
+                        "You are a teacher who specializes in planning lessons.  You should respond in markdown when asked for a lesson plan.  The structure of the lesson plan should be as follows: /n/n" +
+                        lessonPlanTemplate,
                 },
                 {
                     role: "user",
-                    content:
-                        "Create a lesson plan for the following:" +
-                        JSON.stringify(lessonData),
+                    content: "Create a lesson plan for the following:" + JSON.stringify(lessonData),
                 },
             ],
-            max_tokens: 200,
+            max_tokens: 2000,
         });
 
         stream.pipe(res);

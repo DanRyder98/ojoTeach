@@ -1,9 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { toast } from "react-hot-toast";
+import EditableLessonPlan from "./EditableLessonPlan/EditableLessonPlan";
 
-const ContentStreamer = ({ selectedEvent }) => {
-    const [stream, setStream] = useState("");
+const ContentStreamer = ({ selectedEvent, setOpen }) => {
+    const [stream, setStream] = useState(
+        `\n# ${selectedEvent?.subject} - ${
+            selectedEvent?.topic
+        }\n## Lesson Objectives\n ${selectedEvent?.lessonObjectives
+            ?.map((objective) => `- ${objective}`)
+            .join("\n")}\n`
+    );
     const fetchPerformed = useRef(false);
 
     useEffect(() => {
@@ -23,16 +29,13 @@ const ContentStreamer = ({ selectedEvent }) => {
         }
 
         try {
-            const response = await fetch(
-                process.env.NEXT_PUBLIC_BASE_URL + "api/generateStream",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(selectedEvent),
-                }
-            );
+            const response = await fetch(process.env.NEXT_PUBLIC_BASE_URL + "api/generateStream", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(selectedEvent),
+            });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -66,7 +69,7 @@ const ContentStreamer = ({ selectedEvent }) => {
             <div className="py-5">
                 <main>
                     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                        <ReactMarkdown>{stream}</ReactMarkdown>
+                        <EditableLessonPlan stream={stream} setOpen={setOpen} />
                     </div>
                 </main>
             </div>
