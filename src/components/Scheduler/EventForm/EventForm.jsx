@@ -30,7 +30,7 @@ export default function EventForm({
     setSelectedEvent,
     events,
     setEvents,
-    showViewLessonButton = true,
+    showFullForm = true,
     isNewEvent = false,
     setIsNewEvent,
 }) {
@@ -52,6 +52,11 @@ export default function EventForm({
     const [lessonPlanGenerated, setLessonPlanGenerated] = useState(false);
     const [eventEdited, setEventEdited] = useState(false);
 
+    const handleSetItems = (itemsToSet) => {
+        setItems(itemsToSet);
+        setEventEdited(true);
+    };
+
     let recurringOptions = [
         {
             id: 1,
@@ -68,7 +73,7 @@ export default function EventForm({
     ];
     if (isNewEvent) {
         recurringOptions = [
-            { id: 0, name: "Never" },
+            { id: 0, name: "Never", recurrenceType: "NONE", recurrenceValue: 0 },
             {
                 id: 1,
                 name: "Every week",
@@ -84,9 +89,7 @@ export default function EventForm({
         ];
     }
 
-    const [recurringSelected, setRecurringSelected] = useState(
-        setInitialRecurringSelected()
-    );
+    const [recurringSelected, setRecurringSelected] = useState(setInitialRecurringSelected());
 
     const user = useUser();
     const router = useRouter();
@@ -108,8 +111,7 @@ export default function EventForm({
         if (!isNewEvent) indexModifier = 1;
         return (
             recurringOptions[
-                selectedEvent?.recurrenceType === "DAYS" &&
-                selectedEvent?.recurrenceValue === 7
+                selectedEvent?.recurrenceType === "DAYS" && selectedEvent?.recurrenceValue === 7
                     ? 1 - indexModifier
                     : selectedEvent?.recurrenceType === "DAYS" &&
                       selectedEvent?.recurrenceValue === 14
@@ -139,10 +141,8 @@ export default function EventForm({
                 ...selectedEvent,
                 dateTime: time,
                 recurring: recurringSelected.id !== 0,
-                recurrenceType:
-                    recurringOptions[recurringSelected.id].recurrenceType,
-                recurrenceValue:
-                    recurringOptions[recurringSelected.id].recurrenceValue,
+                recurrenceType: recurringOptions[recurringSelected.id].recurrenceType,
+                recurrenceValue: recurringOptions[recurringSelected.id].recurrenceValue,
             };
 
             if (items) {
@@ -181,6 +181,7 @@ export default function EventForm({
                     toast.success("Lesson updated successfully");
                     setViewLessonButtonLoading();
                     setEventEdited(false);
+                    setIsNewEvent(false);
                 })
                 .catch((error) => {
                     // Handle any errors here
@@ -199,6 +200,7 @@ export default function EventForm({
                     toast.success("Lesson updated successfully");
                     setViewLessonButtonLoading();
                     setEventEdited(false);
+                    setIsNewEvent(false);
                 })
                 .catch((error) => {
                     // Handle any errors here
@@ -214,6 +216,7 @@ export default function EventForm({
                     toast.success("Lesson created successfully");
                     setViewLessonButtonLoading();
                     setEventEdited(false);
+                    setIsNewEvent(false);
                 })
                 .catch((error) => {
                     // Handle any errors here
@@ -232,6 +235,7 @@ export default function EventForm({
                     toast.success("Lesson updated successfully");
                     setViewLessonButtonLoading();
                     setEventEdited(false);
+                    setIsNewEvent(false);
                 })
                 .catch((error) => {
                     // Handle any errors here
@@ -255,6 +259,7 @@ export default function EventForm({
                     toast.success("Lesson updated successfully");
                     setViewLessonButtonLoading();
                     setEventEdited(false);
+                    setIsNewEvent(false);
                 })
                 .catch((error) => {
                     // Handle any errors here
@@ -271,10 +276,7 @@ export default function EventForm({
                     setViewLessonButtonLoading();
                     setEventEdited(false);
                     setIsNewEvent(false);
-                    setEvents((events) => [
-                        ...events,
-                        { ...eventToSave, id: newEventRef.key },
-                    ]);
+                    setEvents((events) => [...events, { ...eventToSave, id: newEventRef.key }]);
                 })
                 .catch((error) => {
                     // Handle any errors here
@@ -284,7 +286,7 @@ export default function EventForm({
     }
 
     function setViewLessonButtonLoading() {
-        if (open && showViewLessonButton) {
+        if (open && showFullForm) {
             setLoading(true);
             setButtonActive(false);
             setTimeout(() => {
@@ -319,18 +321,13 @@ export default function EventForm({
         }
 
         // Reference to the event in Firebase Realtime Database
-        const eventRef = ref(
-            db,
-            `users/${userId}/dates/${date}/event/${eventId}`
-        );
+        const eventRef = ref(db, `users/${userId}/dates/${date}/event/${eventId}`);
 
         // Remove the event from Firebase
         remove(eventRef)
             .then(() => {
                 // Filter out the deleted event from the local state
-                const newEvents = events.filter(
-                    (event) => event.id !== eventId
-                );
+                const newEvents = events.filter((event) => event.id !== eventId);
                 setEvents(newEvents);
 
                 // Optionally, show a success message
@@ -464,9 +461,7 @@ export default function EventForm({
                                                         <button
                                                             type="button"
                                                             className="text-gray-400 hover:text-gray-500"
-                                                            onClick={
-                                                                handleClose
-                                                            }
+                                                            onClick={handleClose}
                                                         >
                                                             <span className="sr-only">
                                                                 Close panel
@@ -478,15 +473,11 @@ export default function EventForm({
                                                         </button>
                                                     </div>
                                                 </div>
-                                                {!isNewEvent &&
-                                                showViewLessonButton &&
-                                                !loading ? (
+                                                {!isNewEvent && showFullForm && !loading ? (
                                                     <button
                                                         type="button"
                                                         className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
-                                                        onClick={
-                                                            handleGoToLessonPlan
-                                                        }
+                                                        onClick={handleGoToLessonPlan}
                                                         disabled={!buttonActive}
                                                     >
                                                         <BookOpenIcon
@@ -498,7 +489,7 @@ export default function EventForm({
                                                 ) : (
                                                     !isNewEvent &&
                                                     formEvent.subject !== "" &&
-                                                    showViewLessonButton && (
+                                                    showFullForm && (
                                                         <button
                                                             type="button"
                                                             className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
@@ -512,80 +503,67 @@ export default function EventForm({
                                                         </button>
                                                     )
                                                 )}
-                                                {!isNewEvent &&
-                                                    !showViewLessonButton &&
-                                                    eventEdited && (
-                                                        <button
-                                                            type="button"
-                                                            className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
-                                                            onClick={
-                                                                handleRegenerateLessonPlan
-                                                            }
-                                                            disabled={
-                                                                !buttonActive
-                                                            }
-                                                        >
-                                                            <BookOpenIcon
-                                                                className="-ml-0.5 h-5 w-5"
-                                                                aria-hidden="true"
-                                                            />
-                                                            Regenerate your
-                                                            lesson plan
-                                                        </button>
-                                                    )}
+                                                {!isNewEvent && !showFullForm && eventEdited && (
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
+                                                        onClick={handleRegenerateLessonPlan}
+                                                        disabled={!buttonActive}
+                                                    >
+                                                        <BookOpenIcon
+                                                            className="-ml-0.5 h-5 w-5"
+                                                            aria-hidden="true"
+                                                        />
+                                                        Regenerate your lesson plan
+                                                    </button>
+                                                )}
                                             </div>
                                             {/* Divider container */}
                                             <div className="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
                                                 {/* Color */}
-                                                <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
-                                                    <div>
-                                                        <h3 className="text-sm font-medium leading-6 text-gray-900">
-                                                            Color
-                                                        </h3>
-                                                    </div>
-                                                    <div className="sm:col-span-2">
-                                                        <div className="flex space-x-2">
-                                                            {Object.keys(
-                                                                eventColors
-                                                            ).map(
-                                                                (
-                                                                    color,
-                                                                    index
-                                                                ) => (
-                                                                    <button
-                                                                        key={
-                                                                            color +
-                                                                            index
-                                                                        }
-                                                                        onClick={() => {
-                                                                            handleColorChange(
-                                                                                color
-                                                                            );
-                                                                        }}
-                                                                        type="button"
-                                                                    >
-                                                                        <div
-                                                                            className={`inline-block h-6 w-6 rounded-full ${
-                                                                                eventColors[
+                                                {showFullForm && (
+                                                    <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
+                                                        <div>
+                                                            <h3 className="text-sm font-medium leading-6 text-gray-900">
+                                                                Color
+                                                            </h3>
+                                                        </div>
+                                                        <div className="sm:col-span-2">
+                                                            <div className="flex space-x-2">
+                                                                {Object.keys(eventColors).map(
+                                                                    (color, index) => (
+                                                                        <button
+                                                                            key={color + index}
+                                                                            onClick={() => {
+                                                                                handleColorChange(
                                                                                     color
-                                                                                ]
-                                                                            } ${
-                                                                                formEvent.color ===
-                                                                                color
-                                                                                    ? `border-2 ${eventBorderColors[color]}`
-                                                                                    : ""
-                                                                            }`}
-                                                                        ></div>
-                                                                    </button>
-                                                                )
-                                                            )}
+                                                                                );
+                                                                            }}
+                                                                            type="button"
+                                                                        >
+                                                                            <div
+                                                                                className={`inline-block h-6 w-6 rounded-full ${
+                                                                                    eventColors[
+                                                                                        color
+                                                                                    ]
+                                                                                } ${
+                                                                                    formEvent.color ===
+                                                                                    color
+                                                                                        ? `border-2 ${eventBorderColors[color]}`
+                                                                                        : ""
+                                                                                }`}
+                                                                            ></div>
+                                                                        </button>
+                                                                    )
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                )}
 
                                                 {/* Recurring */}
-                                                {isNewEvent ||
-                                                    (selectedEvent?.recurring && (
+                                                {(isNewEvent || selectedEvent?.recurring) &&
+                                                    showFullForm && (
                                                         <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
                                                             <div>
                                                                 <label
@@ -597,20 +575,12 @@ export default function EventForm({
                                                             </div>
                                                             <div className="sm:col-span-2">
                                                                 <Listbox
-                                                                    value={
-                                                                        recurringSelected
-                                                                    }
-                                                                    onChange={(
-                                                                        e
-                                                                    ) =>
-                                                                        handleRecurringChange(
-                                                                            e.id
-                                                                        )
+                                                                    value={recurringSelected}
+                                                                    onChange={(e) =>
+                                                                        handleRecurringChange(e.id)
                                                                     }
                                                                 >
-                                                                    {({
-                                                                        open,
-                                                                    }) => (
+                                                                    {({ open }) => (
                                                                         <>
                                                                             <div className="relative mt-2">
                                                                                 <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
@@ -628,12 +598,8 @@ export default function EventForm({
                                                                                 </Listbox.Button>
 
                                                                                 <Transition
-                                                                                    show={
-                                                                                        open
-                                                                                    }
-                                                                                    as={
-                                                                                        Fragment
-                                                                                    }
+                                                                                    show={open}
+                                                                                    as={Fragment}
                                                                                     leave="transition ease-in duration-100"
                                                                                     leaveFrom="opacity-100"
                                                                                     leaveTo="opacity-0"
@@ -707,7 +673,7 @@ export default function EventForm({
                                                                 </Listbox>
                                                             </div>
                                                         </div>
-                                                    ))}
+                                                    )}
 
                                                 {/* Subject */}
                                                 <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
@@ -725,14 +691,9 @@ export default function EventForm({
                                                             name="project-name"
                                                             id="project-name"
                                                             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                                            value={
-                                                                formEvent.subject
-                                                            }
+                                                            value={formEvent.subject}
                                                             onChange={(e) =>
-                                                                handleSubjectChange(
-                                                                    e.target
-                                                                        .value
-                                                                )
+                                                                handleSubjectChange(e.target.value)
                                                             }
                                                         />
                                                     </div>
@@ -754,14 +715,9 @@ export default function EventForm({
                                                             name="project-name"
                                                             id="project-name"
                                                             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                                            value={
-                                                                formEvent.topic
-                                                            }
+                                                            value={formEvent.topic}
                                                             onChange={(e) =>
-                                                                handleTopicChange(
-                                                                    e.target
-                                                                        .value
-                                                                )
+                                                                handleTopicChange(e.target.value)
                                                             }
                                                         />
                                                     </div>
@@ -770,7 +726,7 @@ export default function EventForm({
                                                 {/* Lesson Objectives */}
                                                 <CustomListInput
                                                     items={items}
-                                                    setItems={setItems}
+                                                    setItems={handleSetItems}
                                                 />
 
                                                 {/* Year Group */}
@@ -789,19 +745,16 @@ export default function EventForm({
                                                             className="relative inline-block text-left"
                                                         >
                                                             <div>
-                                                                {formEvent.yearGroup ===
-                                                                    null && (
+                                                                {formEvent.yearGroup === null && (
                                                                     <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm text-gray-400 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                                                                        Year
-                                                                        Group
+                                                                        Year Group
                                                                         <ChevronDownIcon
                                                                             className="-mr-1 h-5 w-5 text-gray-400"
                                                                             aria-hidden="true"
                                                                         />
                                                                     </Menu.Button>
                                                                 )}
-                                                                {formEvent.yearGroup ===
-                                                                    0 && (
+                                                                {formEvent.yearGroup === 0 && (
                                                                     <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                                                                         Reception
                                                                         <ChevronDownIcon
@@ -810,10 +763,8 @@ export default function EventForm({
                                                                         />
                                                                     </Menu.Button>
                                                                 )}
-                                                                {formEvent.yearGroup !==
-                                                                    null &&
-                                                                    formEvent.yearGroup !==
-                                                                        0 && (
+                                                                {formEvent.yearGroup !== null &&
+                                                                    formEvent.yearGroup !== 0 && (
                                                                         <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                                                                             {"Year " +
                                                                                 formEvent.yearGroup}
@@ -837,9 +788,7 @@ export default function EventForm({
                                                                 <Menu.Items className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-y-auto max-h-36">
                                                                     <div className="py-1">
                                                                         <Menu.Item>
-                                                                            {({
-                                                                                active,
-                                                                            }) => (
+                                                                            {({ active }) => (
                                                                                 <div
                                                                                     onClick={() => {
                                                                                         handleChangeYearGroup(
@@ -857,20 +806,9 @@ export default function EventForm({
                                                                                 </div>
                                                                             )}
                                                                         </Menu.Item>
-                                                                        {[
-                                                                            ...Array(
-                                                                                12
-                                                                            ),
-                                                                        ].map(
-                                                                            (
-                                                                                _,
-                                                                                i
-                                                                            ) => (
-                                                                                <Menu.Item
-                                                                                    key={
-                                                                                        i
-                                                                                    }
-                                                                                >
+                                                                        {[...Array(12)].map(
+                                                                            (_, i) => (
+                                                                                <Menu.Item key={i}>
                                                                                     {({
                                                                                         active,
                                                                                     }) => (
@@ -889,8 +827,7 @@ export default function EventForm({
                                                                                             )}
                                                                                         >
                                                                                             Year{" "}
-                                                                                            {i +
-                                                                                                1}
+                                                                                            {i + 1}
                                                                                         </div>
                                                                                     )}
                                                                                 </Menu.Item>
@@ -904,6 +841,7 @@ export default function EventForm({
                                                 </div>
 
                                                 {/* Duration */}
+                                                {showFullForm && (
                                                 <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
                                                     <div>
                                                         <label
@@ -923,16 +861,10 @@ export default function EventForm({
                                                                     min="1"
                                                                     max="1000"
                                                                     step="1"
-                                                                    value={
-                                                                        formEvent.duration
-                                                                    }
-                                                                    onChange={(
-                                                                        e
-                                                                    ) =>
+                                                                    value={formEvent.duration}
+                                                                    onChange={(e) =>
                                                                         handleChangeDuration(
-                                                                            e
-                                                                                .target
-                                                                                .value
+                                                                            e.target.value
                                                                         )
                                                                     }
                                                                     className="block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
@@ -946,6 +878,7 @@ export default function EventForm({
                                                         </div>
                                                     </div>
                                                 </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -961,9 +894,7 @@ export default function EventForm({
                                                     } `}
                                                     onClick={handleDelete}
                                                 >
-                                                    {isNewEvent
-                                                        ? "Cancel"
-                                                        : "Delete"}
+                                                    {isNewEvent ? "Cancel" : "Delete"}
                                                 </button>
 
                                                 {/* <button
@@ -987,9 +918,7 @@ export default function EventForm({
                                                     }}
                                                     disabled={!eventEdited}
                                                 >
-                                                    {isNewEvent
-                                                        ? "Create"
-                                                        : "Save"}
+                                                    {isNewEvent ? "Create" : "Save"}
                                                 </button>
                                             </div>
                                         </div>

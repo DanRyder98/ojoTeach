@@ -89,7 +89,6 @@ export default function WeekCalendar({
     const calendarGridRef = useRef(); // Ref to the calendar grid container
 
     const checkIfEventExists = (dateTime) => {
-        console.log(events);
         for (let event of events) {
             const eventStartTime = moment(event.dateTime);
             const eventEndTime = moment(event.dateTime).add(event.duration, "minutes");

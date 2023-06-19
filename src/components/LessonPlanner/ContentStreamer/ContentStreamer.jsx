@@ -3,14 +3,24 @@ import { toast } from "react-hot-toast";
 import EditableLessonPlan from "./EditableLessonPlan/EditableLessonPlan";
 
 const ContentStreamer = ({ selectedEvent, setOpen }) => {
-    const [stream, setStream] = useState(
-        `\n# ${selectedEvent?.subject} - ${
-            selectedEvent?.topic
-        }\n## Lesson Objectives\n ${selectedEvent?.lessonObjectives
-            ?.map((objective) => `- ${objective}`)
-            .join("\n")}\n`
-    );
+    const [stream, setStream] = useState("Loading...");
     const fetchPerformed = useRef(false);
+
+    useEffect(() => {
+        setStream(
+            `\n# ${selectedEvent?.subject} - Year ${selectedEvent?.yearGroup}\n\n## ${
+                selectedEvent?.topic
+            }\n\n### Lesson Objectives\n${selectedEvent?.lessonObjectives
+                ?.map((objective) => `- ${objective}`)
+                .join("\n")}\n`
+        );
+    }, [
+        selectedEvent?.lessonObjectives,
+        selectedEvent?.subject,
+        selectedEvent?.topic,
+        selectedEvent?.yearGroup,
+    ]);
+    
 
     useEffect(() => {
         if (!selectedEvent) {

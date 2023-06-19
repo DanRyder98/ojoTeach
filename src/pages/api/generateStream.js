@@ -34,7 +34,10 @@ export default async function generateStream(req, res) {
                 },
                 {
                     role: "user",
-                    content: "Create a lesson plan for the following:" + JSON.stringify(lessonData),
+                    content:
+                        "Create a lesson plan for the following:" +
+                        JSON.stringify(lessonData) +
+                        `\n\n Please provide a lesson plan that is as detailed as possible, do not leave things for me to do, and make sure to structure it nicely in markdown.`,
                 },
             ],
             max_tokens: 2000,

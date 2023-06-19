@@ -111,10 +111,23 @@ const SchedulerComponent = () => {
 
                     while (nextOccurrence.isSameOrBefore(weekEndDate)) {
                         if (nextOccurrence.isSameOrAfter(weekStartDate)) {
+
+                            let lessonObjectives;
+                            for (const dateKey in recurringEvent.instances) {
+                                if (recurringEvent.instances.hasOwnProperty(dateKey)) {
+                                    lessonObjectives =
+                                        recurringEvent.instances[dateKey].lessonObjectives;
+                                    break; // Optionally break after finding the first instance
+                                }
+                            }
+
+                            console.log(lessonObjectives);
+
                             eventsData.push({
                                 ...recurringEvent,
                                 dateTime: nextOccurrence.format("YYYY-MM-DD") + "T" + dateTime,
                                 recurring: true,
+                                lessonObjectives: lessonObjectives,
                             });
                         }
 

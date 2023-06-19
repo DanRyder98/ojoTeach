@@ -44,7 +44,7 @@ export default async function regenerateStream(req, res) {
                         JSON.stringify(lessonData.lessonPlan) +
                         ".  Here is the section that needs to be regenerated:" +
                         JSON.stringify(lessonData.section) +
-                        ".",
+                        ".  Please only respond with the regenerated section.",
                 },
             ],
             temperature: 0.9,
