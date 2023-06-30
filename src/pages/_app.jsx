@@ -1,8 +1,8 @@
 import 'focus-visible'
-import '@/styles/tailwind.css'
+import "@/styles/tailwind.css";
 
 import { Toaster } from "react-hot-toast";
-import { UserProvider } from "@/components/common/UserContext";
+import { UserProvider } from "../components/common/UserContext";
 // import CookieConsent from "react-cookie-consent";
 // import Link from "next/link";
 

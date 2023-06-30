@@ -121,8 +121,6 @@ const SchedulerComponent = () => {
                                 }
                             }
 
-                            console.log(lessonObjectives);
-
                             eventsData.push({
                                 ...recurringEvent,
                                 dateTime: nextOccurrence.format("YYYY-MM-DD") + "T" + dateTime,
