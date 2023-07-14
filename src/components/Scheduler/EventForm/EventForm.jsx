@@ -46,6 +46,7 @@ export default function EventForm({
             recurring: false,
         }
     );
+
     const [items, setItems] = useState(formEvent.lessonObjectives || {});
     const [loading, setLoading] = useState(isNewEvent);
     const [buttonActive, setButtonActive] = useState(true);
@@ -345,8 +346,6 @@ export default function EventForm({
         if (!eventId) {
             // remove lesson from local state
             const newEvents = events.filter((event) => event.id !== eventId);
-            console.log(events);
-            console.log(newEvents);
             setEvents(newEvents);
             setOpen(false);
             return;
@@ -513,7 +512,7 @@ export default function EventForm({
                                                 {!isNewEvent && showFullForm && !loading ? (
                                                     <button
                                                         type="button"
-                                                        className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
+                                                        className="mt-4 inline-flex w-full items-center justify-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                                         onClick={handleGoToLessonPlan}
                                                         disabled={!buttonActive}
                                                     >
@@ -529,7 +528,7 @@ export default function EventForm({
                                                     showFullForm && (
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
+                                                            className="mt-4 inline-flex w-full items-center justify-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                                             disabled
                                                         >
                                                             <Spinner />
@@ -543,7 +542,7 @@ export default function EventForm({
                                                 {!isNewEvent && !showFullForm && eventEdited && (
                                                     <button
                                                         type="button"
-                                                        className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 w-full justify-center mt-4"
+                                                        className="mt-4 inline-flex w-full items-center justify-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                                         onClick={handleRegenerateLessonPlan}
                                                         disabled={!buttonActive}
                                                     >
@@ -824,7 +823,7 @@ export default function EventForm({
                                                                 leaveFrom="transform opacity-100 scale-100"
                                                                 leaveTo="transform opacity-0 scale-95"
                                                             >
-                                                                <Menu.Items className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-y-auto max-h-36">
+                                                                <Menu.Items className="absolute left-0 z-10 mt-2 max-h-36 w-56 origin-top-right overflow-y-auto rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                                                     <div className="py-1">
                                                                         <Menu.Item>
                                                                             {({ active }) => (
@@ -907,11 +906,11 @@ export default function EventForm({
                                                                             )
                                                                         }
                                                                         required={true}
-                                                                        className="block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                                                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                                                     />
                                                                 </div>
                                                                 <div className="flex items-center">
-                                                                    <span className="text-gray-500 text-sm">
+                                                                    <span className="text-sm text-gray-500">
                                                                         minutes
                                                                     </span>
                                                                 </div>
@@ -929,7 +928,7 @@ export default function EventForm({
                                                     type="button"
                                                     className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                                         isNewEvent
-                                                            ? "bg-white border border-indigo-500 text-indigo-500"
+                                                            ? "border border-indigo-500 bg-white text-indigo-500"
                                                             : "bg-red-600 text-white hover:bg-red-500"
                                                     } `}
                                                     onClick={handleDelete}
@@ -949,7 +948,7 @@ export default function EventForm({
                                                     className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
                                                         eventEdited
                                                             ? "bg-indigo-600 hover:bg-indigo-500"
-                                                            : "bg-indigo-200 hover:bg-indigo-300 cursor-not-allowed"
+                                                            : "cursor-not-allowed bg-indigo-200 hover:bg-indigo-300"
                                                     }`}
                                                     onClick={(e) => {
                                                         if (eventEdited) {

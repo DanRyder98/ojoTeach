@@ -113,10 +113,12 @@ const SchedulerComponent = () => {
                         if (nextOccurrence.isSameOrAfter(weekStartDate)) {
 
                             let lessonObjectives;
+                            let topic
                             for (const dateKey in recurringEvent.instances) {
                                 if (recurringEvent.instances.hasOwnProperty(dateKey)) {
                                     lessonObjectives =
                                         recurringEvent.instances[dateKey].lessonObjectives;
+                                    topic = recurringEvent.instances[dateKey].topic
                                     break; // Optionally break after finding the first instance
                                 }
                             }
@@ -126,6 +128,7 @@ const SchedulerComponent = () => {
                                 dateTime: nextOccurrence.format("YYYY-MM-DD") + "T" + dateTime,
                                 recurring: true,
                                 lessonObjectives: lessonObjectives,
+                                topic: topic
                             });
                         }
 
