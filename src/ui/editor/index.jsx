@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { TiptapEditorProps } from "./props";
 import { TiptapExtensions } from "./extensions";
+import StarterKit from "@tiptap/starter-kit";
 import useLocalStorage from "@/lib/hooks/use-local-storage";
 import { useDebouncedCallback } from "use-debounce";
 import { useCompletion } from "ai/react";
 import { toast } from "sonner";
 import va from "@vercel/analytics";
-import { Markdown } from 'tiptap-markdown';
+import { Markdown } from "tiptap-markdown";
 import DEFAULT_EDITOR_CONTENT from "./default-content";
 
 import { EditorBubbleMenu } from "./components";
@@ -20,7 +21,13 @@ export default function Editor({ initialStream, generateLesson, setGenerateLesso
     const [hydrated, setHydrated] = useState(false);
 
     useEffect(() => {
-        if (!JSON.parse(localStorage.getItem("content")).content[0].content || generateLesson === true) {
+        if (
+            !JSON.parse(localStorage.getItem("content")) ||
+            !JSON.parse(localStorage.getItem("content")).content ||
+            !JSON.parse(localStorage.getItem("content")).content[0] ||
+            !JSON.parse(localStorage.getItem("content")).content[0].content ||
+            generateLesson === true
+        ) {
             setGenerateLesson(true);
         }
     }, [content, generateLesson, setGenerateLesson]);
@@ -36,7 +43,7 @@ export default function Editor({ initialStream, generateLesson, setGenerateLesso
     }, 750);
 
     const editor = useEditor({
-        extensions: [TiptapExtensions, Markdown],
+        extensions: [StarterKit, TiptapExtensions, Markdown],
         editorProps: TiptapEditorProps,
         onUpdate: (e) => {
             setSaveStatus("Unsaved");
