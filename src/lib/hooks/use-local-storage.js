@@ -7,7 +7,11 @@ const useLocalStorage = (key, initialValue) => {
         // Retrieve from localStorage
         const item = window.localStorage.getItem(key);
         if (item) {
+            if (item !== "undefined") {
             setStoredValue(JSON.parse(item));
+            } else {
+                setStoredValue(item);
+            }
         }
     }, [key]);
 

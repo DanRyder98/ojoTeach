@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import EditableLessonPlan from "./EditableLessonPlan/EditableLessonPlan";
+import Editor from "../../../ui/editor";
 
 const ContentStreamer = ({ selectedEvent, setOpen }) => {
     const [stream, setStream] = useState("Loading...");
+    const [generateLesson, setGenerateLesson] = useState(false);
     const fetchPerformed = useRef(false);
 
     useEffect(() => {
+        if (generateLesson) {
         setStream(
             `\n# ${selectedEvent?.subject} - Year ${selectedEvent?.yearGroup}\n\n## ${
                 selectedEvent?.topic
@@ -14,12 +17,8 @@ const ContentStreamer = ({ selectedEvent, setOpen }) => {
                 ?.map((objective) => `- ${objective}`)
                 .join("\n")}\n`
         );
-    }, [
-        selectedEvent?.lessonObjectives,
-        selectedEvent?.subject,
-        selectedEvent?.topic,
-        selectedEvent?.yearGroup,
-    ]);
+            }
+    }, [generateLesson, selectedEvent?.lessonObjectives, selectedEvent?.subject, selectedEvent?.topic, selectedEvent?.yearGroup]);
     
 
     useEffect(() => {
@@ -34,6 +33,10 @@ const ContentStreamer = ({ selectedEvent, setOpen }) => {
     }, [selectedEvent]);
 
     async function fetchStream() {
+        if (!generateLesson) {
+            return
+        }
+
         if (!selectedEvent) {
             return;
         }
@@ -62,11 +65,12 @@ const ContentStreamer = ({ selectedEvent, setOpen }) => {
                 const { done, value } = await reader.read();
 
                 if (done) {
+                    setGenerateLesson(false);
                     break;
                 }
 
                 // decode and add the new chunk of text to the existing stream
-                setStream((prevStream) => prevStream + decoder.decode(value));
+                setStream(decoder.decode(value));
             }
         } catch (error) {
             toast.error("Error getting lesson plan");
@@ -79,7 +83,8 @@ const ContentStreamer = ({ selectedEvent, setOpen }) => {
             <div className="py-5">
                 <main>
                     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                        <EditableLessonPlan stream={stream} setOpen={setOpen} />
+                        {/* <EditableLessonPlan stream={stream} setOpen={setOpen} /> */}
+                        <Editor initialStream={stream} generateLesson={generateLesson} setGenerateLesson={setGenerateLesson} />
                     </div>
                 </main>
             </div>

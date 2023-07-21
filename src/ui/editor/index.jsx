@@ -9,15 +9,21 @@ import { useDebouncedCallback } from "use-debounce";
 import { useCompletion } from "ai/react";
 import { toast } from "sonner";
 import va from "@vercel/analytics";
+import { Markdown } from 'tiptap-markdown';
 import DEFAULT_EDITOR_CONTENT from "./default-content";
 
 import { EditorBubbleMenu } from "./components";
 
-export default function Editor() {
-    const [content, setContent] = useLocalStorage("content", DEFAULT_EDITOR_CONTENT);
+export default function Editor({ initialStream, generateLesson, setGenerateLesson }) {
+    const [content, setContent] = useLocalStorage("content");
     const [saveStatus, setSaveStatus] = useState("Saved");
-
     const [hydrated, setHydrated] = useState(false);
+
+    useEffect(() => {
+        if (!JSON.parse(localStorage.getItem("content")).content[0].content || generateLesson === true) {
+            setGenerateLesson(true);
+        }
+    }, [content, generateLesson, setGenerateLesson]);
 
     const debouncedUpdates = useDebouncedCallback(async ({ editor }) => {
         const json = editor.getJSON();
@@ -30,7 +36,7 @@ export default function Editor() {
     }, 750);
 
     const editor = useEditor({
-        extensions: TiptapExtensions,
+        extensions: [TiptapExtensions, Markdown],
         editorProps: TiptapEditorProps,
         onUpdate: (e) => {
             setSaveStatus("Unsaved");
@@ -53,6 +59,14 @@ export default function Editor() {
         },
         autofocus: "end",
     });
+
+    useEffect(() => {
+        editor?.commands.insertContent(initialStream, {
+            parseOptions: {
+                preserveWhitespace: "full",
+            },
+        });
+    }, [initialStream]);
 
     const { complete, completion, isLoading, stop } = useCompletion({
         id: "novel",
