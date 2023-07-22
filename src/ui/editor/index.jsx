@@ -10,6 +10,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useCompletion } from "ai/react";
 import { toast } from "sonner";
 import va from "@vercel/analytics";
+import { getPrevText } from "@/lib/editor";
 import { Markdown } from "tiptap-markdown";
 import DEFAULT_EDITOR_CONTENT from "./default-content";
 
@@ -43,22 +44,25 @@ export default function Editor({ initialStream, generateLesson, setGenerateLesso
     }, 750);
 
     const editor = useEditor({
-        extensions: [StarterKit, TiptapExtensions, Markdown],
+        extensions: TiptapExtensions,
         editorProps: TiptapEditorProps,
         onUpdate: (e) => {
             setSaveStatus("Unsaved");
             const selection = e.editor.state.selection;
-            const lastTwo = e.editor.state.doc.textBetween(
-                selection.from - 2,
-                selection.from,
-                "\n"
-            );
+            const lastTwo = getPrevText(e.editor, {
+                chars: 2,
+            });
             if (lastTwo === "++" && !isLoading) {
                 e.editor.commands.deleteRange({
                     from: selection.from - 2,
                     to: selection.from,
                 });
-                complete(e.editor.getText());
+                complete(
+                    getPrevText(e.editor, {
+                        chars: 5000,
+                    })
+                );
+                // complete(e.editor.storage.markdown.getMarkdown());
                 va.track("Autocomplete Shortcut Used");
             } else {
                 debouncedUpdates(e);

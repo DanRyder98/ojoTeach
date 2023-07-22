@@ -13,9 +13,7 @@ export default function Home() {
     return (
         <>
             <Head>
-                <title>
-                    Ojo Teach - Revolutionizing lesson planning for teachers 🍎
-                </title>
+                <title>Ojo Teach - Revolutionising lesson planning for teachers 🍎</title>
                 <meta
                     name="description"
                     content="Unleash your creativity, save time and focus on what matters most - teaching 📚"

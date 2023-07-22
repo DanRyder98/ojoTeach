@@ -6,16 +6,10 @@ import clsx from "clsx";
 import { Container } from "@/components/Landing/Container";
 import backgroundImage from "@/images/background-features.jpg";
 import scheduling from "@/images/screenshots/scheduling.png";
-import lessonplanning from "@/images/screenshots/lessonplanning.png";
-import generatingidea from "@/images/screenshots/generatingidea.png";
+import lessonplanning from "@/images/screenshots/ScreenshotCalendar.png";
+import generatingidea from "@/images/screenshots/ScreenshotLessonPlanner.png";
 
 const features = [
-    {
-        title: "Scheduling",
-        description:
-            "We have a really cool feature that lets you schedule your lessons. It's pretty cool.",
-        image: scheduling,
-    },
     {
         title: "Lesson planning",
         description:
