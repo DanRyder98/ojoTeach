@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { ArrowPathIcon, PencilSquareIcon } from "@heroicons/react/20/solid";
 import { toast } from "react-hot-toast";
-import dynamic from "next/dynamic";
 
 export default function EditableLessonPlan({ stream, setOpen }) {
     const [lessonPlan, setLessonPlan] = useState(stream);
@@ -20,12 +19,6 @@ export default function EditableLessonPlan({ stream, setOpen }) {
     }, [stream]);
 
     const handleRegenerateSection = async (section, index) => {
-        setSections((prevSections) => {
-            const newSections = [...prevSections];
-            newSections[index] = "Loading...";
-            return newSections;
-        });
-
         try {
             const response = await fetch(
                 process.env.NEXT_PUBLIC_BASE_URL + "api/regenerateStream",
@@ -73,48 +66,30 @@ export default function EditableLessonPlan({ stream, setOpen }) {
         }
     };
 
-    const handleEditSection = (value, index) => {
-        console.log(value);
-        setSections((prevSections) => {
-            const newSections = [...prevSections];
-            newSections[index] = value;
-            return newSections;
-        });
-    };
-
     return (
         <div>
             {sections.map((section, index) => (
                 <div
                     key={index}
-                    className="my-4 relative border-2 border-transparent hover:border-gray-300 rounded-md p-4 group"
+                    className="group relative my-4 rounded-md border-2 border-transparent p-4 hover:border-gray-300"
                 >
+                    <ReactMarkdown className="prose prose-lg">{section}</ReactMarkdown>
                     {index > 1 ? (
-                        <>
-                            {/* <textarea
-                                value={section}
-                                onChange={(e) => handleEditSection(e.target.value, index)}
-                            /> */}
-                            <ReactMarkdown className="prose prose-lg">{section}</ReactMarkdown>
-                            <button
-                                onClick={() => handleRegenerateSection(section, index)}
-                                className="absolute top-2 right-2 p-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:bg-blue-800 md:hidden group-hover:block"
-                            >
-                                <ArrowPathIcon className="h-5 w-5" />
-                            </button>
-                        </>
+                        <button
+                            onClick={() => handleRegenerateSection(section, index)}
+                            className="absolute right-2 top-2 rounded bg-blue-500 p-2 text-white hover:bg-blue-700 focus:bg-blue-800 focus:outline-none group-hover:block md:hidden"
+                        >
+                            <ArrowPathIcon className="h-5 w-5" />
+                        </button>
                     ) : (
-                        <>
-                            <ReactMarkdown className="prose prose-lg">{section}</ReactMarkdown>
-                            <button
-                                onClick={() => {
-                                    setOpen(true);
-                                }}
-                                className="absolute top-2 right-2 p-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:bg-blue-800 md:hidden group-hover:block"
-                            >
-                                <PencilSquareIcon className="h-5 w-5" />
-                            </button>
-                        </>
+                        <button
+                            onClick={() => {
+                                setOpen(true);
+                            }}
+                            className="absolute right-2 top-2 rounded bg-blue-500 p-2 text-white hover:bg-blue-700 focus:bg-blue-800 focus:outline-none group-hover:block md:hidden"
+                        >
+                            <PencilSquareIcon className="h-5 w-5" />
+                        </button>
                     )}
                 </div>
             ))}

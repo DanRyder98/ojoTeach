@@ -139,12 +139,7 @@ export function Header() {
                     <div className="flex items-center md:gap-x-12">
                         <Link href="#" aria-label="Home">
                             {/* <Logo className="h-10 w-auto" /> */}
-                            <Image
-                                src={ojoLogo}
-                                alt="Ojo Teach Logo"
-                                width={200}
-                                height={105}
-                            />
+                            <Image src={ojoLogo} alt="Ojo Teach Logo" width={200} height={105} />
                         </Link>
                         <div className="hidden md:flex md:gap-x-6">
                             <NavLink href="#features">Features</NavLink>
@@ -152,12 +147,9 @@ export function Header() {
                             <NavLink href="#pricing">Pricing</NavLink>
                             {user && (
                                 <>
-                                    <NavLink href="/scheduler">
-                                        Calendar
-                                    </NavLink>
-                                    <NavLink href="/lessonPlanner">
-                                        Lesson Planner
-                                    </NavLink>
+                                    <NavLink href="/scheduler">Calendar</NavLink>
+                                    <NavLink href="/lessonPlanner">Lesson Planner</NavLink>
+                                    <NavLink href="/page">Notes</NavLink>
                                 </>
                             )}
                         </div>
@@ -166,10 +158,7 @@ export function Header() {
                         {!user && (
                             <Button href="/scheduler" color="blue">
                                 <span>
-                                    Get started{" "}
-                                    <span className="hidden lg:inline">
-                                        today
-                                    </span>
+                                    Get started <span className="hidden lg:inline">today</span>
                                 </span>
                             </Button>
                         )}
