@@ -3,18 +3,22 @@ import { toast } from "react-hot-toast";
 import EditableLessonPlan from "./EditableLessonPlan/EditableLessonPlan";
 
 const ContentStreamer = ({ selectedEvent, setOpen }) => {
-    const [stream, setStream] = useState(
-        `\n# ${selectedEvent?.subject} - ${
-            selectedEvent?.topic
-        }\n## Lesson Objectives\n ${selectedEvent?.lessonObjectives
-            ?.map((objective) => `- ${objective}`)
-            .join("\n")}\n`
-    );
+    const [stream, setStream] = useState("");
     const fetchPerformed = useRef(false);
 
     useEffect(() => {
         if (!selectedEvent) {
             return;
+        }
+
+        if (stream === "") {
+            setStream(
+                `\n# ${selectedEvent?.subject} - ${
+                    selectedEvent?.topic
+                }\n## Lesson Objectives\n ${selectedEvent?.lessonObjectives
+                    ?.map((objective) => `- ${objective}`)
+                    .join("\n")}\n`
+            );
         }
 
         if (!fetchPerformed.current) {
