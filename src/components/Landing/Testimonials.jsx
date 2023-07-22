@@ -11,62 +11,62 @@ const testimonials = [
     [
         {
             content:
-                "lorem ipsum dolor sit amet, consectetur smod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
+                "Ojo has been a game changer for me. I can now plan my lessons in a fraction of the time whilst maintaining the same quality.",
             author: {
-                name: "Sheryl Berge",
-                role: "Head of English at Cheadle Hulme School",
+                name: "Sam Green",
+                role: "History Teacher at Chorlton High School",
                 image: avatarImage1,
             },
         },
+        // {
+        //     content:
+        //         "When I need to spend my time focusing on the children Ojo is there for me to help fill in the parts of my schedule I don't have time for.",
+        //     author: {
+        //         name: "Lewis Lawton-Jones",
+        //         role: "Primary School teacher in Poynton",
+        //         image: avatarImage4,
+        //     },
+        // },
+    ],
+    [
         {
             content:
-                "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna veniam, quis nostrud exercitation ullamco.",
+                "When I need to spend my time focusing on the children Ojo is there for me to help fill in the parts of my schedule I don't have time for.",
             author: {
-                name: "Amy Hahn",
-                role: "Maths Teacher at Bramhall High School",
+                name: "Lewis Lawton-Jones",
+                role: "Primary School teacher in Poynton",
                 image: avatarImage4,
             },
         },
+        // {
+        //     content:
+        //         "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
+        //     author: {
+        //         name: "Erin Powlowski",
+        //         role: "Head of Year 12 at Xavarian College",
+        //         image: avatarImage2,
+        //     },
+        // },
     ],
     [
         {
             content:
-                "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempo, quis nostrud exercitation ullamco.",
+                "Ojo Teach has helped me countless times during my course and was especially helpful during my placements.",
             author: {
-                name: "Leland Kiehn",
-                role: "Year 4 Teacher at St. James' Catholic Primary School",
-                image: avatarImage5,
-            },
-        },
-        {
-            content:
-                "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
-            author: {
-                name: "Erin Powlowski",
-                role: "Head of Year 12 at Xavarian College",
-                image: avatarImage2,
-            },
-        },
-    ],
-    [
-        {
-            content:
-                "lorem ipsum dolor dipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
-            author: {
-                name: "Peter Renolds",
-                role: "Physics Teacher at Loreto Grammar School",
+                name: "Josh Brooke",
+                role: "Teacher Students at Manchester Metropolitan University",
                 image: avatarImage3,
             },
         },
-        {
-            content:
-                "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            author: {
-                name: "Amy Hahn",
-                role: "Head Teacher at Bramhall High School",
-                image: avatarImage4,
-            },
-        },
+        // {
+        //     content:
+        //         "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        //     author: {
+        //         name: "Amy Hahn",
+        //         role: "Head Teacher at Bramhall High School",
+        //         image: avatarImage4,
+        //     },
+        // },
     ],
 ];
 
@@ -91,9 +91,8 @@ export function Testimonials() {
                         Loved by teachers worldwide.
                     </h2>
                     <p className="mt-4 text-lg tracking-tight text-slate-700">
-                        Ojo has already helped countless teachers free up their
-                        time to be creative and focus on their students instead
-                        of their admin.
+                        Ojo has already helped countless teachers free up their time to be creative
+                        and focus on their students instead of their admin.
                     </p>
                 </div>
                 <ul
@@ -102,10 +101,7 @@ export function Testimonials() {
                 >
                     {testimonials.map((column, columnIndex) => (
                         <li key={columnIndex}>
-                            <ul
-                                role="list"
-                                className="flex flex-col gap-y-6 sm:gap-y-8"
-                            >
+                            <ul role="list" className="flex flex-col gap-y-6 sm:gap-y-8">
                                 {column.map((testimonial, testimonialIndex) => (
                                     <li key={testimonialIndex}>
                                         <figure className="relative rounded-2xl bg-white p-6 shadow-xl shadow-slate-900/10">
@@ -118,20 +114,14 @@ export function Testimonials() {
                                             <figcaption className="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
                                                 <div>
                                                     <div className="font-display text-base text-slate-900">
-                                                        {
-                                                            testimonial.author
-                                                                .name
-                                                        }
+                                                        {testimonial.author.name}
                                                     </div>
                                                     <div className="mt-1 text-sm text-slate-500">
-                                                        {
-                                                            testimonial.author
-                                                                .role
-                                                        }
+                                                        {testimonial.author.role}
                                                     </div>
                                                 </div>
                                                 <div className="overflow-hidden rounded-full bg-slate-50">
-                                                    <Image
+                                                    {/* <Image
                                                         className="h-14 w-14 object-cover"
                                                         src={
                                                             testimonial.author
@@ -140,7 +130,7 @@ export function Testimonials() {
                                                         alt=""
                                                         width={56}
                                                         height={56}
-                                                    />
+                                                    /> */}
                                                 </div>
                                             </figcaption>
                                         </figure>

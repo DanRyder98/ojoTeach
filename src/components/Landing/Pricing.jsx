@@ -101,11 +101,7 @@ function Plan({ name, price, description, href, features, featured = false }) {
 
 export function Pricing() {
     return (
-        <section
-            id="pricing"
-            aria-label="Pricing"
-            className="bg-slate-900 py-20 sm:py-32"
-        >
+        <section id="pricing" aria-label="Pricing" className="bg-slate-900 py-20 sm:py-32">
             <Container>
                 <div className="md:text-center">
                     <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl">
@@ -115,32 +111,36 @@ export function Pricing() {
                         </span>{" "}
                         for everyone.
                     </h2>
-                    <p className="mt-4 text-lg text-slate-400">
-                        For individuals and schools.
-                    </p>
+                    <p className="mt-4 text-lg text-slate-400">For individuals and schools.</p>
                 </div>
                 <div className="-mx-4 mt-16 grid max-w-2xl grid-cols-1 gap-y-10 sm:mx-auto lg:-mx-8 lg:max-w-none lg:grid-cols-3 xl:mx-0 xl:gap-x-8">
                     <Plan
                         name="Starter"
-                        price="£X"
+                        price="£2.79/month"
                         description="Good to try out for the price of a coffee, cancel anytime."
                         href="/scheduler"
-                        features={["TBD", "TBD", "TBD"]}
+                        features={[
+                            "Please reach out for FREE early access",
+                            "danielryder98@gmail.com",
+                        ]}
                     />
                     <Plan
                         featured
                         name="Individual Pro"
-                        price="£Y"
+                        price="£7.79/month"
                         description="No restrictions on your teaching."
                         href="/scheduler"
-                        features={["TBD", "TBD", "TBD", "TBD", "TBD", "TBD"]}
+                        features={[
+                            "Please reach out for FREE early access",
+                            "danielryder98@gmail.com",
+                        ]}
                     />
                     <Plan
                         name="Enterprise"
-                        price="£Z"
+                        price="£5/user/month"
                         description="Schools and organizations."
                         href="/scheduler"
-                        features={["TBD", "TBD", "TBD", "TBD"]}
+                        features={["Minimum of 10 users"]}
                     />
                 </div>
             </Container>

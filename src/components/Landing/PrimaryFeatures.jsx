@@ -5,7 +5,7 @@ import clsx from "clsx";
 
 import { Container } from "@/components/Landing/Container";
 import backgroundImage from "@/images/background-features.jpg";
-import scheduling from "@/images/screenshots/scheduling.png";
+import scheduling from "@/images/screenshots/ScreenshotGeneratedPlanner.png";
 import lessonplanning from "@/images/screenshots/ScreenshotCalendar.png";
 import generatingidea from "@/images/screenshots/ScreenshotLessonPlanner.png";
 
@@ -13,13 +13,19 @@ const features = [
     {
         title: "Lesson planning",
         description:
-            "We have a really cool feature that lets you plan your lessons. It's pretty cool.",
+            "I've made a really cool feature that lets you plan your lessons. It's pretty cool.",
         image: lessonplanning,
     },
     {
-        title: "Generate ideas",
+        title: "Generate ideas with AI",
         description:
-            "We have a really cool feature that lets you generate ideas for your lessons. It's pretty cool.",
+            "I've made a really cool feature that lets you generate ideas for your lessons. It's pretty cool.",
+        image: scheduling,
+    },
+    {
+        title: "AI note taking",
+        description:
+            "I've made a really cool feature that lets you take notes for your lessons. It's pretty cool.",
         image: generatingidea,
     },
 ];
