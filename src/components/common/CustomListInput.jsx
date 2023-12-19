@@ -7,6 +7,7 @@ export default function CustomListInput({ items, setItems }) {
     const handleInputChange = (e) => {
         setInputText(e.target.value);
     };
+    
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
